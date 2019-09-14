@@ -1,4 +1,4 @@
-package br.uniriotec.bsi.administrativo;
+package br.uniriotec.bsi.jogotrivia.administrativo;
 
 import java.util.Date;
 

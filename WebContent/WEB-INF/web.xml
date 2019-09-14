@@ -15,4 +15,20 @@
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
 
+	<servlet>
+		<servlet-name>JogoTrivia</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>br.uniriotec.bsi.jogotrivia.service</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>JogoTrivia</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+
+
 </web-app>
