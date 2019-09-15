@@ -11,7 +11,7 @@ import javax.persistence.Id;
 /**
  * 
  * @author Mateus Bandeira
- * Criado em 13/09/19
+ *         Criado em 13/09/19
  *
  */
 @Entity
@@ -23,13 +23,13 @@ public class Usuario {
 	private String nome;
 	@Column(nullable = false)
 	private String hashSenha;
-	@Column(unique=true, nullable = false)
+	@Column(unique = true, nullable = false)
 	private String email;
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	private Date dataCadastro;
 	@Column(nullable = false, columnDefinition = "bit default 1")
 	private Boolean ativo;
-	
+
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, Boolean ativo) {
 		super();
 		this.nome = nome;
@@ -38,9 +38,17 @@ public class Usuario {
 		this.dataCadastro = dataCadastro;
 		this.ativo = ativo;
 	}
-	
+
 	public Usuario() {
-		
+
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getNome() {
@@ -82,8 +90,5 @@ public class Usuario {
 	public void setAtivo(Boolean ativo) {
 		this.ativo = ativo;
 	}
-	
-	
-	
-	
+
 }
