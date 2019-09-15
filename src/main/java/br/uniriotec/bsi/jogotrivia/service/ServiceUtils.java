@@ -13,6 +13,8 @@ import com.monitorjbl.json.JsonViewModule;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 
 public abstract class ServiceUtils {
+	
+	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
 	public static Response buildResponse(Status status) {
 		return Response.status(status).build();

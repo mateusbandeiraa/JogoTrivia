@@ -22,13 +22,12 @@ import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 public class UsuarioService {
 
 	public static final String[] exclusoes = { "hashSenha" };
-	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
 	@POST
 	public Response cadastrar(Usuario u) {
 		UsuarioDao ud = new UsuarioDao();
 
-		if (!u.getEmail().matches(EMAIL_REGEX)) {
+		if (!u.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
 			return buildResponse(Status.BAD_REQUEST, "E-mail inválido");
 		}
 		if (ud.selectByEmail(u.getEmail()) != null) {
