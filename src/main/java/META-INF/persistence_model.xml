@@ -2,21 +2,23 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-	
-	<persistence-unit name="JogoTrivia">
-		
+
+	<persistence-unit name="br.uniriotec.bsi.jogotrivia">
+
 		<class>br.uniriotec.bsi.jogotrivia.administrativo.Usuario</class>
-		
+		<class>br.uniriotec.bsi.jogotrivia.gameplay.Opcao</class>
+		<class>br.uniriotec.bsi.jogotrivia.gameplay.Questao</class>
+
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
 			<property name="javax.persistence.jdbc.url"
 				value="jdbc:mysql://localhost:3306/jogotrivia?createDatabaseIfNotExist=true" />
 			<property name="javax.persistence.jdbc.user" value="username" />
 			<property name="javax.persistence.jdbc.password" value="password" />
-			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" />
-			<property name="hibernate.show_sql" value="false" />
-			<property name="hibernate.hbm2ddl.auto" value="create" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
 		</properties>
-	
+
 	</persistence-unit>
 </persistence>
