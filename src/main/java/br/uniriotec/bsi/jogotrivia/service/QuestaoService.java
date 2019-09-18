@@ -2,6 +2,9 @@ package br.uniriotec.bsi.jogotrivia.service;
 
 import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -12,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import br.uniriotec.bsi.jogotrivia.gameplay.Opcao;
 import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
 import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
 
@@ -21,41 +25,48 @@ import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
 public class QuestaoService {
 
 	@POST
-	public Response cadastrar(Questao q) {
+	public Response cadastrar(Questao questaoJson) {
 		QuestaoDao qd = new QuestaoDao();
 
-		if (q.getOpcoes().size() != 4) {
+		Questao questaoSanetizada = new Questao(questaoJson.getTextoPergunta(), questaoJson.getTempoDisponivel());
+
+		List<Opcao> opcoesSanetizadas = new ArrayList<>();
+		Opcao opcaoCorreta = null;
+		
+		for (Opcao opcao : questaoJson.getOpcoes()) {
+			Opcao opcaoSanetizada = new Opcao(opcao.getTexto(), opcao.isRemovivel());
+			opcoesSanetizadas.add(opcaoSanetizada);
+			if (opcao.isCorreta()) {
+				if (opcaoCorreta == null) {
+					opcaoCorreta = opcao;
+				} else {
+					return buildResponse(Status.BAD_REQUEST, "A questão só pode ter 1 opção correta");
+				}
+			}
+		}
+
+		try {
+			questaoSanetizada.setOpcoes(opcoesSanetizadas, opcaoCorreta);
+		} catch (IllegalArgumentException ex) {
+			return buildResponse(Status.BAD_REQUEST, "A questão precisa ter uma opção correta");
+		}
+
+		if (questaoSanetizada.getOpcoes().size() != 4) {
 			return buildResponse(Status.BAD_REQUEST, "A questão precisa ter 4 opções");
 		}
 
-		qd.insert(q);
+		qd.insert(questaoSanetizada);
 
-		return buildResponse(Status.ACCEPTED, q);
+		return buildResponse(Status.ACCEPTED, questaoSanetizada);
 	}
 
 	@GET
 	@Consumes()
 	public Response get(@QueryParam("idQuestao") Integer idQuestao) {
 		QuestaoDao qd = new QuestaoDao();
-		
+
 		Questao q = qd.select(idQuestao);
 
 		return buildResponse(Status.OK, q);
 	}
-
-	// public static void main(String[] args) {
-	// Questao q = new Questao("Quantos cocos uma andorinha carrega?", 10, 5);
-	// List<Opcao> opcoes = new ArrayList<>();
-	// opcoes.add(new Opcao("1", false));
-	// opcoes.add(new Opcao("0", true));
-	// opcoes.add(new Opcao("Europeias ou americanas?", false));
-	// opcoes.add(new Opcao("Guarapari Búzios", true));
-	//
-	// q.setOpcoes(opcoes, opcoes.get(2));
-	//
-	// QuestaoDao qd = new QuestaoDao();
-	//
-	// qd.insert(q);
-	// qd.tearDown();
-	// }
 }
