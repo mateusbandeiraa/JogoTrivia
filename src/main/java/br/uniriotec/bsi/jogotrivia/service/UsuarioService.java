@@ -72,6 +72,8 @@ public class UsuarioService {
 		}
 
 		TokenAutenticacao tokenNovo = new TokenAutenticacao(usuario);
+		
+		tad.insert(tokenNovo);
 
 		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKENAUTENTICACAO);
 	}
