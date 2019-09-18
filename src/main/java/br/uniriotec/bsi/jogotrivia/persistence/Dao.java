@@ -64,6 +64,9 @@ public class Dao<T> {
 	public void delete(T entity) {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
+		if(!em.contains(entity)) {
+			entity = em.merge(entity);
+		}
 		em.remove(entity);
 		em.getTransaction().commit();
 		em.close();
