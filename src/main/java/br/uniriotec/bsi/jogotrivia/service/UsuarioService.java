@@ -5,7 +5,6 @@ import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
 import java.util.Date;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -57,12 +56,11 @@ public class UsuarioService {
 
 	@POST
 	@Path("/autenticar")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response autenticar(@FormParam("email") String email, @FormParam("senha") String senha) {
+	public Response autenticar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
-		Usuario usuario = ud.selectByEmail(email);
+		Usuario usuario = ud.selectByEmail(usuarioJson.getEmail());
 
-		if (usuario == null || !BCrypt.checkpw(senha, usuario.getHashSenha())) {
+		if (usuario == null || !BCrypt.checkpw(usuarioJson.getHashSenha(), usuario.getHashSenha())) {
 			return buildResponse(Status.UNAUTHORIZED, "Usuario ou senha incorretos");
 		}
 
