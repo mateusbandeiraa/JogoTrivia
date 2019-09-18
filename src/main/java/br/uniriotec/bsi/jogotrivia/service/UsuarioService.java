@@ -61,7 +61,7 @@ public class UsuarioService {
 		Usuario usuario = ud.selectByEmail(usuarioJson.getEmail());
 
 		if (usuario == null || !BCrypt.checkpw(usuarioJson.getHashSenha(), usuario.getHashSenha())) {
-			return buildResponse(Status.UNAUTHORIZED, "Usuario ou senha incorretos");
+			return buildResponse(Status.UNAUTHORIZED, "Usuário ou senha incorretos");
 		}
 
 		TokenAutenticacaoDao tad = new TokenAutenticacaoDao();
