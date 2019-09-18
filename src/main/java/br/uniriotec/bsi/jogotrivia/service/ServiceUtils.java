@@ -10,10 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monitorjbl.json.JsonView;
 import com.monitorjbl.json.JsonViewModule;
 
-import antlr.Token;
-import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
-
 public abstract class ServiceUtils {
 
 	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
