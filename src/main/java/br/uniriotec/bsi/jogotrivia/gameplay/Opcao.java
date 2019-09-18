@@ -13,9 +13,13 @@ public class Opcao {
 	private int id;
 	@Column(nullable = false)
 	private String texto;
-	@Column(nullable = false)
+	// O columnDefinition = "BOOLEAN" é necessário para que o JPA mapeie o campo
+	// para TinyInt(1). Caso contrário, o campo seria mapeado para bit, o que causa
+	// problemas para visualizar os dados no terminal.
+	// stackoverflow.com/a/14249348
+	@Column(nullable = false, columnDefinition = "BOOLEAN")
 	private boolean removivel;
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "BOOLEAN")
 	private boolean correta;
 
 	public Opcao() {
