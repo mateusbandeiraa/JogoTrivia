@@ -26,7 +26,7 @@ import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 public class UsuarioService {
 
 	public static final String[] EXCLUSODES_USUARIO = { "hashSenha" };
-	public static final String[] EXCLUSODES_TOKENAUTENTICACAO = { "usuario.hashSenha" };
+	public static final String[] EXCLUSODES_TOKEN_AUTENTICACAO = { "id", "usuario.hashSenha" };
 
 	@POST
 	public Response cadastrar(Usuario usuarioJson) {
@@ -75,7 +75,7 @@ public class UsuarioService {
 		
 		tad.insert(tokenNovo);
 
-		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKENAUTENTICACAO);
+		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKEN_AUTENTICACAO);
 	}
 
 	@GET
