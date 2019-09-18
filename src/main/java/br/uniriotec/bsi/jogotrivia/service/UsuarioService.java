@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
@@ -24,19 +26,29 @@ public class UsuarioService {
 	public static final String[] exclusoes = { "hashSenha" };
 
 	@POST
-	public Response cadastrar(Usuario u) {
+	public Response cadastrar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
 
-		if (!u.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
+		String hashSenha = BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt());
+		/**
+		 * usuarioSanetizado é utilizado para evitar que campos indesejados inseridos no
+		 * JSON do request possam ser salvos no banco de dados.
+		 */
+		Usuario usuarioSanetizado = new Usuario(usuarioJson.getNome(), hashSenha, usuarioJson.getEmail(), new Date(),
+				true);
+
+		if (usuarioSanetizado == null || usuarioSanetizado.getNome().isEmpty()) {
+			return buildResponse(Status.BAD_REQUEST, "Nome inválido");
+		}
+		if (!usuarioSanetizado.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
 			return buildResponse(Status.BAD_REQUEST, "E-mail inválido");
 		}
-		if (ud.selectByEmail(u.getEmail()) != null) {
+		if (ud.selectByEmail(usuarioSanetizado.getEmail()) != null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário já cadastrado");
 		}
-		
-		u.setDataCadastro(new Date());
-		ud.insert(u);
-		return buildResponse(Status.ACCEPTED, u, exclusoes);
+
+		ud.insert(usuarioSanetizado);
+		return buildResponse(Status.ACCEPTED, usuarioSanetizado, exclusoes);
 	}
 
 	@GET
