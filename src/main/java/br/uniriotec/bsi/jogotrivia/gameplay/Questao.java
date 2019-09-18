@@ -12,8 +12,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Transient;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 public class Questao {
 	@Id
@@ -21,7 +19,6 @@ public class Questao {
 	private int id;
 	private String textoPergunta;
 	private int tempoDisponivel; // em segundos
-	private int tempoBonus; // em segundos
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	// @JoinTable()
@@ -32,15 +29,14 @@ public class Questao {
 
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel, int tempoBonus) {
+	public Questao(String textoPergunta, int tempoDisponivel) {
 		this();
 		this.textoPergunta = textoPergunta;
 		this.tempoDisponivel = tempoDisponivel;
-		this.tempoBonus = tempoBonus;
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel, int tempoBonus, List<Opcao> opcoes) {
-		this(textoPergunta, tempoDisponivel, tempoBonus);
+	public Questao(String textoPergunta, int tempoDisponivel, List<Opcao> opcoes) {
+		this(textoPergunta, tempoDisponivel);
 		this.opcoes = opcoes;
 	}
 
@@ -78,14 +74,6 @@ public class Questao {
 
 	public void setTempoDisponivel(int tempoDisponivel) {
 		this.tempoDisponivel = tempoDisponivel;
-	}
-
-	public int getTempoBonus() {
-		return tempoBonus;
-	}
-
-	public void setTempoBonus(int tempoBonus) {
-		this.tempoBonus = tempoBonus;
 	}
 
 	public List<Opcao> getOpcoes() {
