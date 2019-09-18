@@ -5,6 +5,7 @@ import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
 import java.util.Date;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -15,7 +16,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
 @Path("/usuarioService")
@@ -23,7 +26,8 @@ import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class UsuarioService {
 
-	public static final String[] exclusoes = { "hashSenha" };
+	public static final String[] EXCLUSODES_USUARIO = { "hashSenha" };
+	public static final String[] EXCLUSODES_TOKENAUTENTICACAO = { "usuario.hashSenha" };
 
 	@POST
 	public Response cadastrar(Usuario usuarioJson) {
@@ -48,7 +52,30 @@ public class UsuarioService {
 		}
 
 		ud.insert(usuarioSanetizado);
-		return buildResponse(Status.ACCEPTED, usuarioSanetizado, exclusoes);
+		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
+	}
+
+	@POST
+	@Path("/autenticar")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response autenticar(@FormParam("email") String email, @FormParam("senha") String senha) {
+		UsuarioDao ud = new UsuarioDao();
+		Usuario usuario = ud.selectByEmail(email);
+
+		if (usuario == null || !BCrypt.checkpw(senha, usuario.getHashSenha())) {
+			return buildResponse(Status.UNAUTHORIZED, "Usuario ou senha incorretos");
+		}
+
+		TokenAutenticacaoDao tad = new TokenAutenticacaoDao();
+
+		TokenAutenticacao tokenExistente = tad.selectByUser(usuario);
+		if (tokenExistente != null) {
+			tad.delete(tokenExistente);
+		}
+
+		TokenAutenticacao tokenNovo = new TokenAutenticacao(usuario);
+
+		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKENAUTENTICACAO);
 	}
 
 	@GET
