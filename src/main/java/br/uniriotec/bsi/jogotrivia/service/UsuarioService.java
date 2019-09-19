@@ -61,7 +61,7 @@ public class UsuarioService {
 		Usuario usuarioSanetizado = ud.select(usuarioJson.getId());
 		
 		if(usuarioSanetizado == null) {
-			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado.");
+			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado");
 		}
 		
 		usuarioSanetizado.setNome(usuarioJson.getNome());
