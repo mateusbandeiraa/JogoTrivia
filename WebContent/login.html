@@ -63,11 +63,11 @@
 
           function callbackSuccess(response) {
             salvarToken(response);
-            $("#divFeedback").html("Login efetuado com sucesso").addClass("alert").addClass("alert-success");
+            $("#divFeedback").html("Login efetuado com sucesso").removeClass().addClass("alert").addClass("alert-success");
           }
 
           function callbackFail(response) {
-            $("#divFeedback").html(response.responseText).addClass("alert").addClass("alert-danger");
+            $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
           }
         </script>
       </div>

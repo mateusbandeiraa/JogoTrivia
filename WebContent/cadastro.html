@@ -63,11 +63,11 @@
           });
           
           function callbackSuccess(response){
-            $("#divFeedback").html("Usuário cadastrado").addClass("alert").addClass("alert-success");
+            $("#divFeedback").html("Usuário cadastrado").removeClass().addClass("alert").addClass("alert-success");
           }
 
           function callbackFail(response){
-            $("#divFeedback").html(response.responseText).addClass("alert").addClass("alert-danger");
+            $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
           }
           </script>
       </div>
