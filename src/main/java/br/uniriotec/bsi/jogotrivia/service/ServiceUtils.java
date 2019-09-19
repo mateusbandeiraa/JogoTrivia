@@ -26,13 +26,16 @@ public abstract class ServiceUtils {
 		return Response.status(status).entity(entity).build();
 	}
 
-	public static Response buildResponse(Status status, Object entity, String[] exclusoes) {
+	public static Response buildResponse(Status status, Object entity, ParExclusoes... exclusoes) {
 		ObjectMapper mapper = new ObjectMapper().registerModule(new JsonViewModule());
 		Response resposta;
 
 		try {
-			String json = mapper
-					.writeValueAsString(JsonView.with(entity).onClass(entity.getClass(), match().exclude(exclusoes)));
+			JsonView<Object> view = JsonView.with(entity);
+			for (ParExclusoes par : exclusoes) {
+				view = view.onClass(par.classe, match().exclude(par.exclusoes));
+			}
+			String json = mapper.writeValueAsString(view);
 
 			resposta = Response.status(status).entity(json).build();
 		} catch (JsonProcessingException ex) {
@@ -41,5 +44,15 @@ public abstract class ServiceUtils {
 		}
 
 		return resposta;
+	}
+
+	protected static class ParExclusoes {
+		public final Class<?> classe;
+		public final String[] exclusoes;
+
+		public ParExclusoes(Class<?> classe, String... exclusoes) {
+			this.classe = classe;
+			this.exclusoes = exclusoes;
+		}
 	}
 }
