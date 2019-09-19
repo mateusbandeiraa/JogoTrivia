@@ -28,27 +28,48 @@
     <div class="card col-sm-8 offset-sm-2 col-lg-6 offset-lg-3" id="cardLogin">
       <div class="card-body">
         <h1 class="card-title">Cadastro</h1>
-        <form>
+        <div id="alertDiv"></div>
+        <form id="formCadastro" action="/rest/usuarioService" method="POST">
           <div class="form-group">
             <label for="inputNome">Nome de usuário</label>
-            <input type="text" class="form-control" id="inputNome" placeholder="Digite o nome de usuário">
+            <input type="text" class="form-control" id="inputNome" name="nome" placeholder="Digite o nome de usuário"
+              required>
           </div>
           <div class="form-group">
             <label for="inputEmail1">E-mail</label>
-            <input type="email" class="form-control" id="inputEmail1" placeholder="Digite o e-mail">
+            <input type="email" class="form-control" id="inputEmail1" name="email" placeholder="Digite o e-mail"
+              required>
           </div>
           <div class="form-group">
             <label for="inputPassword1">Senha</label>
-            <input type="password" class="form-control" id="inputPassword1" placeholder="Senha">
+            <input type="password" class="form-control" id="inputPassword1" name="hashSenha" placeholder="Senha" required>
           </div>
           <div class="form-group">
-              <label for="inputPassword2">Confirme a senha</label>
-              <input type="password" class="form-control" id="inputPassword2" placeholder="Senha">
-            </div>
+            <label for="inputPassword2">Confirme a senha</label>
+            <input type="password" class="form-control" id="inputPassword2" placeholder="Senha" required>
+          </div>
           <div class="wrapperBotoes">
             <button type="submit" class="btn btn-block btn-primary">Cadastrar</button>
           </div>
         </form>
+        <script>
+          $("#formCadastro").submit(function (event) {
+            event.preventDefault();
+            var post_url = $(this).attr("action"); //get form action url
+            var request_method = $(this).attr("method"); //get form GET/POST method
+            var form_data = formToJson(this); //Encode form elements for submission
+
+            requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+          });
+          
+          function callbackSuccess(response){
+            $("#alertDiv").html("Usuário cadastrado").addClass("alert").addClass("alert-success");
+          }
+
+          function callbackFail(response){
+            $("#alertDiv").html(response.responseText).addClass("alert").addClass("alert-danger");
+          }
+          </script>
       </div>
     </div>
 

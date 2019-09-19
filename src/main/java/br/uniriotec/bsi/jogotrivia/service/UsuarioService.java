@@ -33,6 +33,10 @@ public class UsuarioService {
 	public Response cadastrar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
 
+		if (usuarioJson.getHashSenha() == null) {
+			return buildResponse(Status.BAD_REQUEST);
+		}
+
 		String hashSenha = BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt());
 		/**
 		 * usuarioSanetizado é utilizado para evitar que campos indesejados inseridos no
@@ -46,7 +50,7 @@ public class UsuarioService {
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
-		
+
 		if (ud.selectByEmail(usuarioSanetizado.getEmail()) != null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário já cadastrado");
 		}
@@ -59,16 +63,16 @@ public class UsuarioService {
 	public Response atualizar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
 		Usuario usuarioSanetizado = ud.select(usuarioJson.getId());
-		
-		if(usuarioSanetizado == null) {
+
+		if (usuarioSanetizado == null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado");
 		}
-		
+
 		usuarioSanetizado.setNome(usuarioJson.getNome());
 		usuarioSanetizado.setEmail(usuarioJson.getEmail());
 		usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
-		
-		if(usuarioJson.getHashSenha() != null) {
+
+		if (usuarioJson.getHashSenha() != null) {
 			usuarioSanetizado.setHashSenha(BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt()));
 		}
 
@@ -77,9 +81,9 @@ public class UsuarioService {
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
-		
+
 		ud.update(usuarioSanetizado);
-		
+
 		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
 	}
 
