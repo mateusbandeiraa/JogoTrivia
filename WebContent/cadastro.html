@@ -28,7 +28,7 @@
     <div class="card col-sm-8 offset-sm-2 col-lg-6 offset-lg-3" id="cardLogin">
       <div class="card-body">
         <h1 class="card-title">Cadastro</h1>
-        <div id="alertDiv"></div>
+        <div id="divFeedback"></div>
         <form id="formCadastro" action="/rest/usuarioService" method="POST">
           <div class="form-group">
             <label for="inputNome">Nome de usuário</label>
@@ -63,11 +63,11 @@
           });
           
           function callbackSuccess(response){
-            $("#alertDiv").html("Usuário cadastrado").addClass("alert").addClass("alert-success");
+            $("#divFeedback").html("Usuário cadastrado").addClass("alert").addClass("alert-success");
           }
 
           function callbackFail(response){
-            $("#alertDiv").html(response.responseText).addClass("alert").addClass("alert-danger");
+            $("#divFeedback").html(response.responseText).addClass("alert").addClass("alert-danger");
           }
           </script>
       </div>
