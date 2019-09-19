@@ -14,6 +14,13 @@
   <link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
   <!--load all styles -->
   <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+  <style>
+    #tableUsuarios tbody>tr:hover {
+      cursor: pointer;
+      background-color: cadetblue;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
@@ -25,11 +32,11 @@
         <h3>Usuários</h3>
 
         <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="search">
-          <a class="btn btn-outline-success my-2 my-sm-0" type="button"><i class="fas fa-search"></i></a>
+          <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="search"> <a
+            class="btn btn-outline-success my-2 my-sm-0" type="button"><i class="fas fa-search"></i></a>
         </form>
 
-        <table class="table mt-3">
+        <table class="table mt-3" id="tableUsuarios">
           <thead>
             <tr>
               <th scope="col">Usuário</th>
@@ -45,6 +52,27 @@
             </tr>
           </tbody>
         </table>
+        <script>
+          let bodyTabela = $("#tableUsuarios>tbody");
+          requestService("/rest/usuarioService", 'GET', null, callbackSuccess, callbackFail);
+
+          function callbackSuccess(response) {
+            let htmlBody = '';
+            for (let usuario of response) {
+              let htmlLinha = `<tr data-userid="${usuario.id}">
+                            <td>${usuario.nome}</td>
+                            <td>${usuario.email}</td>
+                            <td>${usuario.privilegios}</td>
+                          </tr>`;
+              htmlBody += htmlLinha;
+            }
+            bodyTabela.html(htmlBody);
+          }
+
+          function callbackFail(response) {
+            alert("Ocorreu um erro: " + response);
+          }
+        </script>
 
       </div>
 
@@ -52,7 +80,7 @@
 
       <div class="col-5">
 
-        <h3 class="mb-3"> GandalfTehGrey</h3>
+        <h3 class="mb-3">GandalfTehGrey</h3>
 
         <div class="input-group mb-3">
           <div class="input-group-prepend">
@@ -66,29 +94,24 @@
         </div>
 
         <div class="card" style="width: auto;">
-          <div class="card-header">
-            User ID: 1
-          </div>
+          <div class="card-header">User ID: 1</div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item">Criação da conta: 01/01/2001</li>
             <li class="list-group-item">
               <form class="form-inline my-2 my-lg-0">
-                Email:
-                <input class="form-control ml-1" type="email" value="galdelf@shi.re" aria-label="email">
+                Email: <input class="form-control ml-1" type="email" value="galdelf@shi.re" aria-label="email">
               </form>
             </li>
             <li class="list-group-item">
               <form class="form-inline my-2 my-lg-0">
-                Nova senha:
-                <input class="form-control ml-1" type="password" placeholder="Nova senha" aria-label="email">
+                Nova senha: <input class="form-control ml-1" type="password" placeholder="Nova senha"
+                  aria-label="email">
               </form>
             </li>
             <li class="list-group-item">
               <div class="form-inline">
                 <label class="form-check-label" for="defaultCheck1">
-                  Usuario ativo: </label>
-
-                <input class="form-check-input" type="checkbox" id="defaultCheck1" checked>
+                  Usuario ativo: </label> <input class="form-check-input" type="checkbox" id="defaultCheck1" checked>
               </div>
             </li>
             <li class="list-group-item">Jogos participados: 26</li>
@@ -102,7 +125,7 @@
         </div>
 
 
-        <h3 class="mt-3"> Créditos</h3>
+        <h3 class="mt-3">Créditos</h3>
         <table class="table mt-1">
           <thead>
             <tr>
@@ -134,8 +157,8 @@
         </table>
         <div class="mb-3">
           <div class="container-fluid">
-            Conceder créditos: R$ <input class="creditos" type="number" value="3"></input> <button type="button"
-              class="btn btn-success">Conceder</button>
+            Conceder créditos: R$ <input class="creditos" type="number" value="3"></input>
+            <button type="button" class="btn btn-success">Conceder</button>
           </div>
         </div>
 
