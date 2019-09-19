@@ -1,19 +1,16 @@
+hr.vertical {
 
-hr {
-    margin-top: 0px;
-    margin-bottom: 1rem;
-    border: 0;
-    border-top: 3px solid rgba(0,0,0,1);
-}
-
-hr.vertical{ 
-  
-    border:         none;
+    border: none;
     margin: 10px;
-    border-left:    1px solid hsla(200, 10%, 50%,100);
-    height:         100vh;
-    width:          1px;       
+    border-left: 1px solid hsla(200, 10%, 50%, 100);
+    height: 100vh;
+    width: 1px;
 }
+
+nav {
+    margin-bottom: 16px;
+}
+
 .navbar-brand {
     font-size: 2rem;
 }
@@ -22,8 +19,8 @@ input.creditos {
     width: 3rem
 }
 
-ul{
-list-style-type: none;
+ul {
+    list-style-type: none;
 }
 
 

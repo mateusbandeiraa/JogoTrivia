@@ -4,29 +4,21 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Painel de Controle - Usuários</title>
+  <title>Painel de Controle</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-    crossorigin="anonymous">
-  <link href="../fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" media="screen" href="../../WebContent/main.css" />
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="/js/main.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+  <!--load all styles -->
+  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
 </head>
 
 <body>
+  <nav class="triviaNav"></nav>
   <div class="container-fluid">
-
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">JogoTrivia</a>
-      <div class="collapse navbar-collapse" id="navbarText">
-        <ul class="navbar-nav mr-auto mt-2">
-          <li class="nav-item active">
-            <a class="nav-link" href="painelControle.html">Painel de Controle</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-    <hr>
-
     <div class="row container-fluid">
       <div class="col-6">
 
@@ -63,73 +55,74 @@
         <h3 class="mb-3"> GandalfTehGrey</h3>
 
         <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <label class="input-group-text" for="inputGroupSelect01">Privilégios</label>
-            </div>
-            <select class="custom-select" id="inputGroupSelect01">
-              <option selected value="Usuário">Usuário</option>
-              <option value="Anfitrião">Anfitrião</option>
-              <option value="Moderador">Moderador</option>
-            </select>
+          <div class="input-group-prepend">
+            <label class="input-group-text" for="inputGroupSelect01">Privilégios</label>
           </div>
+          <select class="custom-select" id="inputGroupSelect01">
+            <option selected value="Usuário">Usuário</option>
+            <option value="Anfitrião">Anfitrião</option>
+            <option value="Moderador">Moderador</option>
+          </select>
+        </div>
 
-          <div class="card" style="width: 20rem;">
-              <div class="card-header">
-                User ID: 1
-              </div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Criação da conta: 01/01/2001</li>
-                <li class="list-group-item"> 
-                    <form class="form-inline my-2 my-lg-0">
-                        Email: 
-                        <input class="form-control ml-1" type="email" placeholder="galdelf@shi.re" aria-label="email" disabled>
-                       </form>
-                </li>
-                <li class="list-group-item">Jogos participados: 26</li>
-                <li class="list-group-item">Jogos ganhos: 2</li>
-                <li class="list-group-item">Saldo atual: R$ 5,70</li>
-              </ul>
-            </div>
+        <div class="card" style="width: 20rem;">
+          <div class="card-header">
+            User ID: 1
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Criação da conta: 01/01/2001</li>
+            <li class="list-group-item">
+              <form class="form-inline my-2 my-lg-0">
+                Email:
+                <input class="form-control ml-1" type="email" placeholder="galdelf@shi.re" aria-label="email" disabled>
+              </form>
+            </li>
+            <li class="list-group-item">Jogos participados: 26</li>
+            <li class="list-group-item">Jogos ganhos: 2</li>
+            <li class="list-group-item">Saldo atual: R$ 5,70</li>
+          </ul>
+        </div>
 
-            <div class="row mt-3 mb-2 container justify-content-between">
-                <button type="button" class="btn btn-success mr-3">Salvar</button>
-                <button type="button" class="btn btn-danger ml-3">Banir Usuário</button>
-            </div>
+        <div class="row mt-3 mb-2 container justify-content-between">
+          <button type="button" class="btn btn-success mr-3">Salvar</button>
+          <button type="button" class="btn btn-danger ml-3">Banir Usuário</button>
+        </div>
 
-            
+
         <h3 class="mt-3"> Créditos</h3>
         <table class="table mt-1">
-            <thead>
-              <tr>
-                <th scope="col">Valor</th>
-                <th scope="col">Data</th>
-                <th scope="col">Tipo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>+ R$ 5</td>
-                <td>01/01/2001</td>
-                <td>Depósito</td>
-              </tr>
+          <thead>
+            <tr>
+              <th scope="col">Valor</th>
+              <th scope="col">Data</th>
+              <th scope="col">Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>+ R$ 5</td>
+              <td>01/01/2001</td>
+              <td>Depósito</td>
+            </tr>
 
-              <tr>
-                <td>- R$ 30</td>
-                <td>01/01/2001</td>
-                <td>Entrada em jogo</td>
-              </tr>
+            <tr>
+              <td>- R$ 30</td>
+              <td>01/01/2001</td>
+              <td>Entrada em jogo</td>
+            </tr>
 
-              <tr>
-                <td>+ R$ 1</td>
-                <td>01/01/2001</td>
-                <td>Prêmio em jogo</td>
-              </tr>
+            <tr>
+              <td>+ R$ 1</td>
+              <td>01/01/2001</td>
+              <td>Prêmio em jogo</td>
+            </tr>
 
-            </tbody>
-          </table>
+          </tbody>
+        </table>
         <div class="mb-3">
           <div class="container-fluid">
-            Conceder créditos: R$ <input class ="creditos" type="number" value="3"></input>  <button type="button" class="btn btn-primary">Conceder</button>
+            Conceder créditos: R$ <input class="creditos" type="number" value="3"></input> <button type="button"
+              class="btn btn-primary">Conceder</button>
           </div>
         </div>
 
