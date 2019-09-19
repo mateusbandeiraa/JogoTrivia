@@ -111,7 +111,6 @@ public class UsuarioService {
 	}
 
 	@GET
-	// @Consumes(MediaType.TEXT_PLAIN)
 	public Response get(@QueryParam("id") String idUsuario) {
 		UsuarioDao ud = new UsuarioDao();
 		Response response;
