@@ -20,7 +20,7 @@ function requestService(service, method, data, callbackSuccess, callbackFail) {
     $.ajax({
         url: service,
         type: method,
-        data: JSON.stringify(data),
+        data: data ? JSON.stringify(data) : null,
         processData: false,
         contentType: "application/json",
         success: callbackSuccess,
