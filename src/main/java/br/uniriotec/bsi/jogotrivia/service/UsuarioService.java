@@ -3,6 +3,7 @@ package br.uniriotec.bsi.jogotrivia.service;
 import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -10,6 +11,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -20,14 +22,15 @@ import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
+import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 
 @Path("/usuarioService")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class UsuarioService {
 
-	public static final String[] EXCLUSODES_USUARIO = { "hashSenha" };
-	public static final String[] EXCLUSODES_TOKEN_AUTENTICACAO = { "id", "usuario.hashSenha" };
+	public static final ParExclusoes EXCLUSOES_USUARIO = new ParExclusoes(Usuario.class, "hashSenha");
+	public static final ParExclusoes EXCLUSOES_TOKEN_AUTENTICACAO = new ParExclusoes(TokenAutenticacao.class, "id");
 
 	@POST
 	public Response cadastrar(Usuario usuarioJson) {
@@ -46,29 +49,29 @@ public class UsuarioService {
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
-		
+
 		if (ud.selectByEmail(usuarioSanetizado.getEmail()) != null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário já cadastrado");
 		}
 
 		ud.insert(usuarioSanetizado);
-		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
+		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSOES_USUARIO);
 	}
 
 	@PUT
 	public Response atualizar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
 		Usuario usuarioSanetizado = ud.select(usuarioJson.getId());
-		
-		if(usuarioSanetizado == null) {
+
+		if (usuarioSanetizado == null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado.");
 		}
-		
+
 		usuarioSanetizado.setNome(usuarioJson.getNome());
 		usuarioSanetizado.setEmail(usuarioJson.getEmail());
 		usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
-		
-		if(usuarioJson.getHashSenha() != null) {
+
+		if (usuarioJson.getHashSenha() != null) {
 			usuarioSanetizado.setHashSenha(BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt()));
 		}
 
@@ -77,10 +80,10 @@ public class UsuarioService {
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
-		
+
 		ud.update(usuarioSanetizado);
-		
-		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
+
+		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSOES_USUARIO);
 	}
 
 	@POST
@@ -104,12 +107,26 @@ public class UsuarioService {
 
 		tad.insert(tokenNovo);
 
-		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKEN_AUTENTICACAO);
+		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSOES_TOKEN_AUTENTICACAO);
 	}
 
 	@GET
-	public Response get() {
-		return buildResponse(new Usuario("Mateus", "1234", "mateus.albertin@uniriotec.br", new Date(), true));
+	// @Consumes(MediaType.TEXT_PLAIN)
+	public Response get(@QueryParam("id") String idUsuario) {
+		UsuarioDao ud = new UsuarioDao();
+		Response response;
+		if (idUsuario != null) {
+			Usuario usuario = ud.select(Integer.valueOf(idUsuario));
+			if (usuario != null) {
+				response = buildResponse(Status.OK, usuario, EXCLUSOES_USUARIO);
+			} else {
+				response = buildResponse(Status.NOT_FOUND, "Usuário não encontrado");
+			}
+		} else {
+			List<Usuario> usuarios = ud.selectAll();
+			response = buildResponse(Status.OK, usuarios, EXCLUSOES_USUARIO, EXCLUSOES_TOKEN_AUTENTICACAO);
+		}
+		return response;
 	}
 
 	private static boolean validarUsuario(Usuario usuario) {
