@@ -7,6 +7,7 @@ import java.util.Date;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -40,17 +41,45 @@ public class UsuarioService {
 		Usuario usuarioSanetizado = new Usuario(usuarioJson.getNome(), hashSenha, usuarioJson.getEmail(), new Date(),
 				true);
 
-		if (usuarioSanetizado == null || usuarioSanetizado.getNome().isEmpty()) {
-			return buildResponse(Status.BAD_REQUEST, "Nome inválido");
+		try {
+			validarUsuario(usuarioSanetizado);
+		} catch (IllegalArgumentException ex) {
+			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
-		if (!usuarioSanetizado.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
-			return buildResponse(Status.BAD_REQUEST, "E-mail inválido");
-		}
+		
 		if (ud.selectByEmail(usuarioSanetizado.getEmail()) != null) {
 			return buildResponse(Status.BAD_REQUEST, "Usuário já cadastrado");
 		}
 
 		ud.insert(usuarioSanetizado);
+		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
+	}
+
+	@PUT
+	public Response atualizar(Usuario usuarioJson) {
+		UsuarioDao ud = new UsuarioDao();
+		Usuario usuarioSanetizado = ud.select(usuarioJson.getId());
+		
+		if(usuarioSanetizado == null) {
+			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado.");
+		}
+		
+		usuarioSanetizado.setNome(usuarioJson.getNome());
+		usuarioSanetizado.setEmail(usuarioJson.getEmail());
+		usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
+		
+		if(usuarioJson.getHashSenha() != null) {
+			usuarioSanetizado.setHashSenha(BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt()));
+		}
+
+		try {
+			validarUsuario(usuarioSanetizado);
+		} catch (IllegalArgumentException ex) {
+			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
+		}
+		
+		ud.update(usuarioSanetizado);
+		
 		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSODES_USUARIO);
 	}
 
@@ -72,7 +101,7 @@ public class UsuarioService {
 		}
 
 		TokenAutenticacao tokenNovo = new TokenAutenticacao(usuario);
-		
+
 		tad.insert(tokenNovo);
 
 		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSODES_TOKEN_AUTENTICACAO);
@@ -81,5 +110,15 @@ public class UsuarioService {
 	@GET
 	public Response get() {
 		return buildResponse(new Usuario("Mateus", "1234", "mateus.albertin@uniriotec.br", new Date(), true));
+	}
+
+	private static boolean validarUsuario(Usuario usuario) {
+		if (usuario.getNome() == null || usuario.getNome().isEmpty()) {
+			throw new IllegalArgumentException("Nome inválido");
+		}
+		if (!usuario.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
+			throw new IllegalArgumentException("E-mail inválido");
+		}
+		return true;
 	}
 }

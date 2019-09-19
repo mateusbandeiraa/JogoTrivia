@@ -27,10 +27,10 @@ public class Usuario {
 	private String email;
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	private Date dataCadastro;
-	@Column(nullable = false, columnDefinition = "bit default 1")
-	private Boolean ativo;
+	@Column(nullable = false, columnDefinition = "boolean default true")
+	private boolean ativo;
 
-	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, Boolean ativo) {
+	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		super();
 		this.nome = nome;
 		this.hashSenha = hashSenha;
@@ -83,11 +83,11 @@ public class Usuario {
 		this.dataCadastro = dataCadastro;
 	}
 
-	public Boolean getAtivo() {
+	public boolean getAtivo() {
 		return ativo;
 	}
 
-	public void setAtivo(Boolean ativo) {
+	public void setAtivo(boolean ativo) {
 		this.ativo = ativo;
 	}
 }
