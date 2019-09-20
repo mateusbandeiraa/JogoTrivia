@@ -20,7 +20,7 @@ function requestService(service, method, data, callbackSuccess, callbackFail) {
     $.ajax({
         url: service,
         type: method,
-        data: data ? JSON.stringify(data) : null,
+        data: data ? method == 'GET' ? data : JSON.stringify(data) : null,
         processData: false,
         contentType: "application/json",
         success: callbackSuccess,
@@ -53,6 +53,6 @@ function salvarToken(token) {
     setCookie("userInfo", JSON.stringify(token), new Date(token.dataExpiracao));
 }
 
-function obterToken(){
+function obterToken() {
     return JSON.parse(getCookie("userInfo"));
 }
