@@ -17,12 +17,21 @@ function formToJson(form) {
 }
 
 function requestService(service, method, data, callbackSuccess, callbackFail) {
+    if (data && method != "GET") {
+        data = JSON.stringify(data);
+    }
+    const userInfo = getCookie("userInfo");
+    let tokenAutenticacao = null;
+    if (userInfo) {
+        tokenAutenticacao = userInfo.token;
+    }
     $.ajax({
         url: service,
         type: method,
-        data: data ? method == 'GET' ? data : JSON.stringify(data) : null,
-        processData: false,
+        data: data,
+        dataType: 'json',
         contentType: "application/json",
+        headers: tokenAutenticacao ? { "Authorization": "Bearer " + tokenAutenticacao } : null,
         success: callbackSuccess,
         error: callbackFail
     });
@@ -43,7 +52,7 @@ function getCookie(nome) {
             c = c.substring(1);
         }
         if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
+            return JSON.parse(c.substring(name.length, c.length));
         }
     }
     return "";

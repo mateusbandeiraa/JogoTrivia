@@ -32,5 +32,21 @@ public class TokenAutenticacaoDao extends Dao<TokenAutenticacao>{
 	public TokenAutenticacao selectByUser(Usuario usuario) {
 		return selectByUser(usuario.getId());
 	}
+	
+	public TokenAutenticacao selectByToken(String token) {
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		Query q = em.createQuery("FROM " + TokenAutenticacao.class.getSimpleName() + " WHERE token = ?1");
+		q.setParameter(1, token);
+		TokenAutenticacao result;
+		try {
+			result = (TokenAutenticacao) q.getSingleResult();
+		} catch (NoResultException ex) {
+			return null;
+		}
+		em.getTransaction().commit();
+		em.close();
+		return result;
+	}
 
 }

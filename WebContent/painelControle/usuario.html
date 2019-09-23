@@ -42,14 +42,19 @@
       }
     }
     function callbackFail(response) {
-      alert("Ocorreu um erro: " + response);
+      if (response.status == 401) {
+        let params = {
+          "msg": "Você precisa fazer login para acessar essa página",
+          "returnTo": window.location.href
+        }
+        window.location.href = "/login.html?" + $.param(params);
+      }
     }
 
     function atualizarDadosUsuario(idUsuario) {
-      requestService('/rest/usuarioService', 'GET', `id=${idUsuario}`, callbackSuccess, callbackFail);
+      requestService('/rest/usuarioService', 'GET', { "id": idUsuario }, callbackSuccess, callbackFail);
 
       function callbackSuccess(response) {
-        console.log(response);
         for (let i in response) {
           if (i == 'ativo') {
             let check = $(`input[name=${i}]`);
@@ -113,13 +118,12 @@
         <h1>Editar usuário</h1>
         <form id="formUsuario" action="/rest/usuarioService" method="PUT">
           <div class="form-group row">
-            <label for="inputUserID" class="col-md-2">User ID</label>
-            <input type="text" class="form-control col-md-10" id="inputUserID" name="id" required readonly>
+            <label for="inputUserID" class="col-md-2">User ID</label> <input type="text" class="form-control col-md-10"
+              id="inputUserID" name="id" required readonly>
           </div>
           <div class="form-group row">
-            <label for="inputNome" class="col-md-4">Nome de usuário</label>
-            <input type="text" class="form-control col-md-8" id="inputNome" name="nome"
-              placeholder="Digite o nome de usuário" required>
+            <label for="inputNome" class="col-md-4">Nome de usuário</label> <input type="text"
+              class="form-control col-md-8" id="inputNome" name="nome" placeholder="Digite o nome de usuário" required>
           </div>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -132,23 +136,21 @@
             </select>
           </div>
           <div class="form-group row">
-            <label for="inputDataCadastro" class="col-md-4">Data de cadastro</label>
-            <input type="datetime-local" class="form-control col-md-8" id="inputDataCadastro" name="dataCadastro"
-              required disabled>
+            <label for="inputDataCadastro" class="col-md-4">Data de
+              cadastro</label> <input type="datetime-local" class="form-control col-md-8" id="inputDataCadastro"
+              name="dataCadastro" required disabled>
           </div>
           <div class="form-group row">
-            <label for="inputEmail1" class="col-md-2">E-mail</label>
-            <input type="email" class="form-control col-md-10" id="inputEmail1" name="email"
-              placeholder="Digite o e-mail" required>
+            <label for="inputEmail1" class="col-md-2">E-mail</label> <input type="email" class="form-control col-md-10"
+              id="inputEmail1" name="email" placeholder="Digite o e-mail" required>
           </div>
           <div class="form-group row">
-            <label for="inputPassword1" class="col-md-3">Nova senha</label>
-            <input type="password" class="form-control col-md-9" id="inputPassword1" name="hashSenha"
-              placeholder="Senha">
+            <label for="inputPassword1" class="col-md-3">Nova senha</label> <input type="password"
+              class="form-control col-md-9" id="inputPassword1" name="hashSenha" placeholder="Senha">
           </div>
           <div class="form-group row">
-            <label for="inputAtivo" class="col-md-2">Ativo: </label>
-            <input type="checkbox" class="form-control col-md-10" id="inputAtivo" name="ativo">
+            <label for="inputAtivo" class="col-md-2">Ativo: </label> <input type="checkbox"
+              class="form-control col-md-10" id="inputAtivo" name="ativo">
           </div>
           <div class="form-group row">
             <button type="submit" class="btn btn-block btn-primary">Salvar</button>
