@@ -38,11 +38,6 @@ public class Usuario {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR') DEFAULT 'USUARIO'")
 	private Privilegio privilegio = Privilegio.USUARIO;
-	
-	public static void main(String[] args) {
-		UsuarioDao ud = new UsuarioDao();
-		ud.insert(new Usuario("Mateus", BCrypt.hashpw("1234", BCrypt.gensalt()), "mateusbandeiraa@gmail.com", new Date(), true));
-	}
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		super();
