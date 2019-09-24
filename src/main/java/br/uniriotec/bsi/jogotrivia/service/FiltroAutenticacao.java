@@ -57,7 +57,7 @@ public class FiltroAutenticacao implements ContainerRequestFilter {
 
 				@Override
 				public boolean isUserInRole(String role) {
-					return true;
+					return usuario.getPrivilegio().toString().equals(role);
 				}
 
 				@Override

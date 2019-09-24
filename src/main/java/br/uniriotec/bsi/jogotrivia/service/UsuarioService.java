@@ -20,6 +20,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
@@ -76,8 +77,9 @@ public class UsuarioService {
 		usuarioSanetizado.setNome(usuarioJson.getNome());
 		usuarioSanetizado.setEmail(usuarioJson.getEmail());
 		usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
+		usuarioSanetizado.setPrivilegio(usuarioJson.getPrivilegio());
 
-		if (usuarioJson.getHashSenha() != null) {
+		if (usuarioJson.getHashSenha() != null && !usuarioJson.getHashSenha().isEmpty()) {
 			usuarioSanetizado.setHashSenha(BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt()));
 		}
 
@@ -117,7 +119,7 @@ public class UsuarioService {
 	}
 
 	@GET
-	@Autenticado
+	@Autenticado(Privilegio.MODERADOR)
 	public Response get(@QueryParam("id") String idUsuario, @Context SecurityContext securityContext) {
 		UsuarioDao ud = new UsuarioDao();
 		Response response;
@@ -133,6 +135,12 @@ public class UsuarioService {
 			response = buildResponse(Status.OK, usuarios, EXCLUSOES_USUARIO, EXCLUSOES_TOKEN_AUTENTICACAO);
 		}
 		return response;
+	}
+
+	@GET
+	@Path("/privilegios")
+	public Response getPrivilegios() {
+		return buildResponse(Status.OK, Privilegio.values());
 	}
 
 	private static boolean validarUsuario(Usuario usuario) {

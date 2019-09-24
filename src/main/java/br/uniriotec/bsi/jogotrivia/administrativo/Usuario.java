@@ -4,9 +4,15 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
+import org.mindrot.jbcrypt.BCrypt;
+
+import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
 /**
  * 
@@ -29,6 +35,14 @@ public class Usuario {
 	private Date dataCadastro;
 	@Column(nullable = false, columnDefinition = "boolean default true")
 	private boolean ativo;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR') DEFAULT 'USUARIO'")
+	private Privilegio privilegio = Privilegio.USUARIO;
+	
+	public static void main(String[] args) {
+		UsuarioDao ud = new UsuarioDao();
+		ud.insert(new Usuario("Mateus", BCrypt.hashpw("1234", BCrypt.gensalt()), "mateusbandeiraa@gmail.com", new Date(), true));
+	}
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		super();
@@ -90,4 +104,13 @@ public class Usuario {
 	public void setAtivo(boolean ativo) {
 		this.ativo = ativo;
 	}
+
+	public Privilegio getPrivilegio() {
+		return privilegio;
+	}
+
+	public void setPrivilegio(Privilegio privilegio) {
+		this.privilegio = privilegio;
+	}
+
 }

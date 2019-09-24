@@ -22,6 +22,21 @@
     }
   </style>
   <script>
+    function obterListaPrivilegios() {
+      requestService("/rest/usuarioService/privilegios", 'GET', null, callbackSuccess, callbackFail);
+      
+      function callbackSuccess(response){
+        let input = $("#selectPrivilegios");
+        let htmlOptions = '';
+        for(let privilegio of response){
+          htmlOptions += `<option value="${privilegio}">${privilegio}</option>`;
+        }
+        input.html(htmlOptions);
+      }
+      function callbackFail(response){
+        console.log(response);
+      }
+    }
     function atualizarTabela() {
       let bodyTabela = $("#tableUsuarios>tbody");
       requestService("/rest/usuarioService", 'GET', null, callbackSuccess, callbackFail);
@@ -32,7 +47,7 @@
           let htmlLinha = `<tr data-userid="${usuario.id}">
                             <td>${usuario.nome}</td>
                             <td>${usuario.email}</td>
-                            <td>${usuario.privilegios}</td>
+                            <td>${usuario.privilegio}</td>
                           </tr>`;
           htmlBody += htmlLinha;
         }
@@ -40,17 +55,23 @@
           $("tr[data-userid]").click((elemento) => atualizarDadosUsuario(elemento.currentTarget.getAttribute('data-userid')));
         });
       }
-    }
-    function callbackFail(response) {
-      if (response.status == 401) {
-        let params = {
-          "msg": "Você precisa fazer login para acessar essa página",
-          "returnTo": window.location.href
+
+      function callbackFail(response) {
+        if (response.status == 401) {
+          let params = {
+            "msg": "Você precisa fazer login para acessar essa página",
+            "returnTo": window.location.href
+          }
+          window.location.href = "/login.html?" + $.param(params);
+        } else if (response.status == 403) {
+          let params = {
+            "msg": "Você precisa ser moderador para visualizar essa página",
+            "returnTo": window.location.href
+          }
+          window.location.href = "/login.html?" + $.param(params);
         }
-        window.location.href = "/login.html?" + $.param(params);
       }
     }
-
     function atualizarDadosUsuario(idUsuario) {
       requestService('/rest/usuarioService', 'GET', { "id": idUsuario }, callbackSuccess, callbackFail);
 
@@ -65,6 +86,8 @@
             }
           } else if (i == 'dataCadastro') {
             $(`input[name=${i}]`).val(new Date(response[i]).toLocaleDateString());
+          } else if(i == 'privilegio'){
+            $(`select[name=${i}]`).val(response[i]);
           } else {
             $(`input[name=${i}]`).val(response[i]);
           }
@@ -127,14 +150,14 @@
           </div>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
-              <label class="input-group-text" for="inputGroupSelect01">Privilégios</label>
+              <label class="input-group-text" for="selectPrivilegios">Privilégios</label>
             </div>
-            <select class="custom-select" id="inputGroupSelect01">
-              <option selected value="Usuário">Usuário</option>
-              <option value="Anfitrião">Anfitrião</option>
-              <option value="Moderador">Moderador</option>
+            <select class="custom-select" id="selectPrivilegios" name="privilegio">
             </select>
           </div>
+          <script>
+            obterListaPrivilegios();
+          </script>
           <div class="form-group row">
             <label for="inputDataCadastro" class="col-md-4">Data de
               cadastro</label> <input type="datetime-local" class="form-control col-md-8" id="inputDataCadastro"

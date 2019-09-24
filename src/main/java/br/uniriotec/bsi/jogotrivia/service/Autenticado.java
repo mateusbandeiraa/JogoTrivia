@@ -7,9 +7,11 @@ import java.lang.annotation.Target;
 
 import javax.ws.rs.NameBinding;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
+
 @NameBinding
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ ElementType.TYPE, ElementType.METHOD })
 public @interface Autenticado {
-
+	Privilegio[] value() default {};
 }
