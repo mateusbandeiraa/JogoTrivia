@@ -13,16 +13,13 @@ public class Dao<T> {
 
 	public Dao(Class<T> persistedClass) {
 		this.persistedClass = persistedClass;
-		this.setUp();
+		if (emf == null)
+			this.setUp();
 	}
 
-	protected void setUp() {
+	private void setUp() {
 		String unit = "br.uniriotec.bsi.jogotrivia";
 		emf = Persistence.createEntityManagerFactory(unit);
-	}
-
-	protected void tearDown() {
-		emf.close();
 	}
 
 	public T select(int id) {
@@ -64,7 +61,7 @@ public class Dao<T> {
 	public void delete(T entity) {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
-		if(!em.contains(entity)) {
+		if (!em.contains(entity)) {
 			entity = em.merge(entity);
 		}
 		em.remove(entity);
