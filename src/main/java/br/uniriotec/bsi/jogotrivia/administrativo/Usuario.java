@@ -12,8 +12,6 @@ import javax.persistence.Id;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
-
 /**
  * 
  * @author Mateus Bandeira
