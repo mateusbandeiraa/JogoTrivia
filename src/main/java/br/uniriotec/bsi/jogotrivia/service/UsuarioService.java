@@ -18,8 +18,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.mindrot.jbcrypt.BCrypt;
-
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
@@ -38,21 +36,16 @@ public class UsuarioService {
 	@POST
 	public Response cadastrar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
-
-		if (usuarioJson.getHashSenha() == null) {
-			return buildResponse(Status.BAD_REQUEST);
-		}
-
-		String hashSenha = BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt());
-		/**
-		 * usuarioSanetizado é utilizado para evitar que campos indesejados inseridos no
-		 * JSON do request possam ser salvos no banco de dados.
-		 */
-		Usuario usuarioSanetizado = new Usuario(usuarioJson.getNome(), hashSenha, usuarioJson.getEmail(), new Date(),
-				true);
+		Usuario usuarioSanetizado;
 
 		try {
-			validarUsuario(usuarioSanetizado);
+			/**
+			 * usuarioSanetizado é utilizado para evitar que campos indesejados inseridos no
+			 * JSON do request possam ser salvos no banco de dados.
+			 */
+			usuarioSanetizado = new Usuario(usuarioJson.getNome(), usuarioJson.getEmail(), new Date(), true);
+
+			usuarioSanetizado.setSenha(usuarioJson.getHashSenha());
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
@@ -74,17 +67,16 @@ public class UsuarioService {
 			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado.");
 		}
 
-		usuarioSanetizado.setNome(usuarioJson.getNome());
-		usuarioSanetizado.setEmail(usuarioJson.getEmail());
-		usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
-		usuarioSanetizado.setPrivilegio(usuarioJson.getPrivilegio());
-
-		if (usuarioJson.getHashSenha() != null && !usuarioJson.getHashSenha().isEmpty()) {
-			usuarioSanetizado.setHashSenha(BCrypt.hashpw(usuarioJson.getHashSenha(), BCrypt.gensalt()));
-		}
-
 		try {
-			validarUsuario(usuarioSanetizado);
+			usuarioSanetizado.setNome(usuarioJson.getNome());
+			usuarioSanetizado.setEmail(usuarioJson.getEmail());
+			usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
+			usuarioSanetizado.setPrivilegio(usuarioJson.getPrivilegio());
+
+			if (usuarioJson.getHashSenha() != null && !usuarioJson.getHashSenha().isEmpty()) {
+				usuarioSanetizado.setSenha(usuarioJson.getHashSenha());
+			}
+
 		} catch (IllegalArgumentException ex) {
 			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
 		}
@@ -100,7 +92,16 @@ public class UsuarioService {
 		UsuarioDao ud = new UsuarioDao();
 		Usuario usuario = ud.selectByEmail(usuarioJson.getEmail());
 
-		if (usuario == null || !BCrypt.checkpw(usuarioJson.getHashSenha(), usuario.getHashSenha())) {
+		TokenAutenticacao tokenNovo;
+
+		try {
+			if (usuario == null) {
+				throw new Exception();
+			}
+
+			tokenNovo = usuario.autenticar(usuarioJson.getHashSenha());
+
+		} catch (Exception ex) {
 			return buildResponse(Status.UNAUTHORIZED, "Usuário ou senha incorretos");
 		}
 
@@ -110,8 +111,6 @@ public class UsuarioService {
 		if (tokenExistente != null) {
 			tad.delete(tokenExistente);
 		}
-
-		TokenAutenticacao tokenNovo = new TokenAutenticacao(usuario);
 
 		tad.insert(tokenNovo);
 
@@ -141,15 +140,5 @@ public class UsuarioService {
 	@Path("/privilegios")
 	public Response getPrivilegios() {
 		return buildResponse(Status.OK, Privilegio.values());
-	}
-
-	private static boolean validarUsuario(Usuario usuario) {
-		if (usuario.getNome() == null || usuario.getNome().isEmpty()) {
-			throw new IllegalArgumentException("Nome inválido");
-		}
-		if (!usuario.getEmail().matches(ServiceUtils.EMAIL_REGEX)) {
-			throw new IllegalArgumentException("E-mail inválido");
-		}
-		return true;
 	}
 }

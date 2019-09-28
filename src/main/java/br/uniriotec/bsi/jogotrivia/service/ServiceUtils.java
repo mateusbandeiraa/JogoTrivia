@@ -12,8 +12,6 @@ import com.monitorjbl.json.JsonViewModule;
 
 public abstract class ServiceUtils {
 
-	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
-
 	public static Response buildResponse(Status status) {
 		return Response.status(status).build();
 	}
