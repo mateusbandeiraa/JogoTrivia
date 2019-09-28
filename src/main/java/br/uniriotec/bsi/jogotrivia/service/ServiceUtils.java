@@ -3,6 +3,7 @@ package br.uniriotec.bsi.jogotrivia.service;
 import static com.monitorjbl.json.Match.match;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.Status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,8 +11,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monitorjbl.json.JsonView;
 import com.monitorjbl.json.JsonViewModule;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
+
 public abstract class ServiceUtils {
 
+	public static Usuario obterUsuarioPorSecurityContext(SecurityContext context) {
+		int idUsuarioAutenticado = Integer.valueOf(context.getUserPrincipal().getName());
+		Usuario usuarioAutenticado = new UsuarioDao().select(idUsuarioAutenticado);
+		return usuarioAutenticado;
+	}
+	
 	public static Response buildResponse(Status status) {
 		return Response.status(status).build();
 	}
