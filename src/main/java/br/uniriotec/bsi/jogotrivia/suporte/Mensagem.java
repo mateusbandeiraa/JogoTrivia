@@ -24,11 +24,17 @@ public class Mensagem {
 	private Usuario autor;
 
 	public Mensagem() {
-
+		super();
+	}
+	
+	public Mensagem(String conteudo, Usuario autor) {
+		this();
+		this.conteudo = conteudo;
+		this.dataCriacao = new Date();
+		this.autor = autor;
 	}
 
 	public Mensagem(String conteudo, Usuario autor, Date dataCriacao) {
-		super();
 		this.conteudo = conteudo;
 		this.dataCriacao = dataCriacao;
 		this.autor = autor;

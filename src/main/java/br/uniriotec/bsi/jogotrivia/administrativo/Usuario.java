@@ -12,6 +12,9 @@ import javax.persistence.Id;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
+import br.uniriotec.bsi.jogotrivia.suporte.Ticket;
+
 /**
  * 
  * @author Mateus Bandeira
@@ -59,6 +62,13 @@ public class Usuario {
 		} else {
 			throw new IllegalArgumentException("Senha incorreta");
 		}
+	}
+
+	public Ticket abrirTicket(String assunto, String textoMensagem) {
+		Ticket t = new Ticket(assunto, this);
+		Mensagem m = new Mensagem(textoMensagem, this);
+		t.adicionarMensagem(m);
+		return t;
 	}
 
 	public Usuario() {
