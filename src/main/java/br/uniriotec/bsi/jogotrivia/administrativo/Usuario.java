@@ -22,6 +22,9 @@ import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
  */
 @Entity
 public class Usuario {
+
+	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
@@ -40,16 +43,28 @@ public class Usuario {
 	private Privilegio privilegio = Privilegio.USUARIO;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
-		super();
-		this.nome = nome;
-		this.hashSenha = hashSenha;
-		this.email = email;
-		this.dataCadastro = dataCadastro;
-		this.ativo = ativo;
+		this(nome, email, dataCadastro, ativo);
+		setHashSenha(hashSenha);
+	}
+
+	public Usuario(String nome, String email, Date dataCadastro, boolean ativo) {
+		this();
+		setNome(nome);
+		setEmail(email);
+		setDataCadastro(dataCadastro);
+		setAtivo(ativo);
+	}
+
+	public TokenAutenticacao autenticar(String senha) throws IllegalArgumentException {
+		if (BCrypt.checkpw(senha, hashSenha)) {
+			return new TokenAutenticacao(this);
+		} else {
+			throw new IllegalArgumentException("Senha incorreta");
+		}
 	}
 
 	public Usuario() {
-
+		super();
 	}
 
 	public int getId() {
@@ -64,7 +79,10 @@ public class Usuario {
 		return nome;
 	}
 
-	public void setNome(String nome) {
+	public void setNome(String nome) throws IllegalArgumentException {
+		if (nome == null || nome.isEmpty()) {
+			throw new IllegalArgumentException("Nome inválido");
+		}
 		this.nome = nome;
 	}
 
@@ -76,11 +94,21 @@ public class Usuario {
 		this.hashSenha = hashSenha;
 	}
 
+	public void setSenha(String senha) throws IllegalArgumentException {
+		if (senha == null || senha.isEmpty()) {
+			throw new IllegalArgumentException("Senha inválida");
+		}
+		this.setHashSenha(BCrypt.hashpw(senha, BCrypt.gensalt()));
+	}
+
 	public String getEmail() {
 		return email;
 	}
 
-	public void setEmail(String email) {
+	public void setEmail(String email) throws IllegalArgumentException {
+		if (!email.matches(EMAIL_REGEX)) {
+			throw new IllegalArgumentException("E-mail inválido");
+		}
 		this.email = email;
 	}
 
