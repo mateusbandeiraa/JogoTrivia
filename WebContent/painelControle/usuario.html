@@ -4,16 +4,16 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Painel de Controle</title>
+  <title>Painel de Controle - Usuário</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"
     integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
   <script src="/js/main.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+  <link href="../fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
   <!--load all styles -->
-  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="../main.css" />
   <style>
     #tableUsuarios tbody>tr:hover {
       cursor: pointer;
@@ -24,16 +24,16 @@
   <script>
     function obterListaPrivilegios() {
       requestService("/rest/usuarioService/privilegios", 'GET', null, callbackSuccess, callbackFail);
-      
-      function callbackSuccess(response){
+
+      function callbackSuccess(response) {
         let input = $("#selectPrivilegios");
         let htmlOptions = '';
-        for(let privilegio of response){
+        for (let privilegio of response) {
           htmlOptions += `<option value="${privilegio}">${privilegio}</option>`;
         }
         input.html(htmlOptions);
       }
-      function callbackFail(response){
+      function callbackFail(response) {
         console.log(response);
       }
     }
@@ -86,7 +86,7 @@
             }
           } else if (i == 'dataCadastro') {
             $(`input[name=${i}]`).val(new Date(response[i]).toLocaleDateString());
-          } else if(i == 'privilegio'){
+          } else if (i == 'privilegio') {
             $(`select[name=${i}]`).val(response[i]);
           } else {
             $(`input[name=${i}]`).val(response[i]);
@@ -114,22 +114,24 @@
             class="btn btn-outline-success my-2 my-sm-0" type="button"><i class="fas fa-search"></i></a>
         </form>
 
-        <table class="table mt-3" id="tableUsuarios">
-          <thead>
-            <tr>
-              <th scope="col">Usuário</th>
-              <th scope="col">E-mail</th>
-              <th scope="col">Privilégios</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Gandalf TheGrey</td>
-              <td>galdelf@shi.re</td>
-              <td>usuário</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="table mt-3" id="tableUsuarios">
+            <thead>
+              <tr>
+                <th scope="col">Usuário</th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Privilégios</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Gandalf TheGrey</td>
+                <td>galdelf@shi.re</td>
+                <td>usuário</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <script>
           atualizarTabela();
         </script>
