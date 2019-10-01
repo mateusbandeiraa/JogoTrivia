@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Painel de Controle - Suporte - Atendimento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="/js/main.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="../fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+    <!--load all styles -->
+    <link rel="stylesheet" type="text/css" media="screen" href="../main.css" />
+    <style>
+        #tableSuporte tbody>tr:hover {
+            cursor: pointer;
+            background-color: cadetblue;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="triviaNav"></nav>
+    <div class="container-fluid">
+        <div class="row container-fluid">
+            <div class="col-6">
+
+                <h3>Suporte - Atendimento</h3>
+
+                <div class="table-responsive">
+                    <table class="table mt-3" id="tableSuporte">
+                        <thead>
+                            <tr>
+                                <th scope="col">User ID</th>
+                                <th scope="col">Nome de usuário</th>
+                                <th scope="col">Título da requisição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>3035</td>
+                                <td>Gandalf TheGrey</td>
+                                <td>Como eu faço para me tornar um moderador?</td>
+                            </tr>
+                            <tr>
+                                <td>1232</td>
+                                <td>Beto Barbosa</td>
+                                <td>Adocica meu amor?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <script>
+                    atualizarTabela();
+                </script>
+            </div>
+
+            <hr class="vertical">
+
+            <div class="col-5">
+                <h1>Detalhes - Suporte</h1>
+                <form id="formSuporte" action="/rest/SuporteService" method="PUT">
+                    <div class="form-group row">
+                        <label for="inputUserID" class="col-md-2">User ID</label> <input type="text"
+                            class="form-control col-md-9" id="inputUserID" name="id" required readonly>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputNome" class="col-md-2">Nome de usuário</label> <input type="text"
+                            class="form-control col-md-9" id="inputNome" name="nome" required readonly>
+                    </div>
+
+                    <div class="card">
+                            <h5 class="card-header">Dúvida</h5>
+                            <div class="card-body">
+                              <h5 class="card-title">Como eu faço para me tornar um moderador?</h5>
+                              <p class="card-text">Olá, eu gostaria de me tornar um moderador da plataforma do JogoTrivia. Como devo proceder?</p>
+                              <hr>
+                              <textarea class="card-text col-md-12" type="text" placeholder="Resposta do suporte"></textarea>
+                              <hr>
+                              <div class="form-group row">
+                                    <button type="submit" class="btn btn-block btn-primary col-3 ml-3">Responder</button>
+                                </div>
+                            </div>
+                          </div>
+                    
+                     
+                </form>
+                <div id="divFeedback"></div>
+                <script>
+                    $("#formSuporte").submit(function (event) {
+                        event.preventDefault();
+                        let post_url = $(this).attr("action"); //get form action url
+                        let request_method = $(this).attr("method"); //get form GET/POST method
+                        let form_data = formToJson(this); //Encode form elements for submission
+
+                        form_data.ativo = form_data.ativo == "on" ? true : false;
+                        requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+                    });
+
+                    function callbackSuccess(response) {
+                        $("#divFeedback").html("Suporte respondido").removeClass().addClass("alert").addClass("alert-success");
+                        atualizarTabela();
+                    }
+
+                    function callbackFail(response) {
+                        $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+                    }
+                </script>
+
+
+                <!-- </div> -->
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
