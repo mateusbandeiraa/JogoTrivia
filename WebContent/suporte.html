@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>JogoTrivia - Suporte</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="/js/main.js"></script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+	<!--load all styles -->
+	<link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+	<style>
+		.wrapperBotoes>a {
+			float: right;
+		}
+
+		.wrapperBotoes>div {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 8px;
+		}
+	</style>
+</head>
+
+<body>
+	<nav class="triviaNav"></nav>
+	<div class="container">
+		<div class="card col-sm-8 offset-sm-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4" id="cardLogin">
+			<div class="card-body">
+				<h1 class="card-title">Ajuda</h1>
+				<div id="divFeedback"></div>
+				<form id="formTicket" action="/rest/suporteService" method="POST">
+					<div class="form-group">
+						<label for="inputAssunto">Assunto</label>
+						<input type="text" class="form-control" id="inputAssunto" name="assunto" placeholder="Assunto">
+					</div>
+					<div class="form-group">
+						<label for="inputMensagem">Mensagem</label>
+						<textarea class="form-control" id="inputMensagem" name="mensagem" rows="3"></textarea>
+					</div>
+					<div class="wrapperBotoes">
+						<div>
+							<button type="submit" class="btn btn-primary btn-block">Abrir ticket</button>
+						</div>
+					</div>
+				</form>
+				<script>
+					$("#formTicket").submit(function (event) {
+						event.preventDefault();
+						let service = $(this).attr("action"); //get form action url
+						let method = $(this).attr("method"); //get form GET/POST method
+						let data = formToJson(this); //Encode form elements for submission
+						const userInfo = getCookie("userInfo");
+						let tokenAutenticacao = null;
+						if (userInfo) {
+							tokenAutenticacao = userInfo.token;
+						}
+						$.ajax({
+							url: service,
+							type: method,
+							data: data,
+							contentType: "application/x-www-form-urlencoded",
+							headers: tokenAutenticacao ? { "Authorization": "Bearer " + tokenAutenticacao } : null,
+							success: callbackSuccess,
+							error: callbackFail
+						});
+					});
+
+					function callbackSuccess(response) {
+						$("#divFeedback").html("Ticket aberto").removeClass().addClass("alert").addClass("alert-success");
+					}
+
+					function callbackFail(response) {
+						$("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+					}
+				</script>
+			</div>
+		</div>
+
+	</div>
+</body>
+
+</html>

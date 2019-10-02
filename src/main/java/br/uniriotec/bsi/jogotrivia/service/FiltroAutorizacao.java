@@ -48,11 +48,12 @@ public class FiltroAutorizacao implements ContainerRequestFilter {
 
 			// Check if the user is allowed to execute the method
 			// The method annotations override the class annotations
-			if (privilegiosMetodo.isEmpty()) {
+			if (!privilegiosMetodo.isEmpty()) {
 				checarPermissoes(privilegiosClasse);
-			} else {
-				checarPermissoes(privilegiosMetodo);
 			}
+//			else {
+//				checarPermissoes(privilegiosMetodo);
+//			}
 
 		} catch (Exception e) {
 			requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
