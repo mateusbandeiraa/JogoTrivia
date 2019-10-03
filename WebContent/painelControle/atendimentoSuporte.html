@@ -15,12 +15,108 @@
     <!--load all styles -->
     <link rel="stylesheet" type="text/css" media="screen" href="../main.css" />
     <style>
-        #tableSuporte tbody>tr:hover {
+        #tableTickets tbody>tr:hover {
             cursor: pointer;
             background-color: cadetblue;
             color: white;
         }
     </style>
+    <script>
+        function atualizarTabela() {
+            let bodyTabela = $("#tableTickets>tbody");
+            requestService("/rest/suporteService/todos", 'GET', null, callbackSuccess, callbackFail);
+
+            function callbackSuccess(response) {
+                console.log(response);
+                let htmlBody = '';
+                for (let ticket of response) {
+                    let htmlLinha = `<tr data-ticketid="${ticket.id}">
+                            <td>${ticket.id}</td>
+                            <td>${ticket.solicitante.nome}</td>
+                            <td>${ticket.assunto}</td>
+                          </tr>`;
+                    htmlBody += htmlLinha;
+                }
+                bodyTabela.html(htmlBody).promise().done(() => {
+                    $("tr[data-ticketid]").click((elemento) => {
+                        const id = elemento.currentTarget.getAttribute('data-ticketid');
+                        $(`[name=ticketId]`).val(id);
+                        atualizarMensagens(id);
+                    });
+                });
+            }
+
+            function callbackFail(response) {
+                if (response.status == 401) {
+                    let params = {
+                        "msg": "Você precisa fazer login para acessar essa página",
+                        "returnTo": window.location.href
+                    }
+                    window.location.href = "/login.html?" + $.param(params);
+                } else if (response.status == 403) {
+                    let params = {
+                        "msg": "Você precisa ser moderador para visualizar essa página",
+                        "returnTo": window.location.href
+                    }
+                    window.location.href = "/login.html?" + $.param(params);
+                }
+            }
+        }
+
+        function atualizarMensagens(ticketId) {
+
+            const userInfo = getCookie("userInfo");
+            let tokenAutenticacao = null;
+            if (userInfo) {
+                tokenAutenticacao = userInfo.token;
+            }
+
+
+            $.ajax({
+                url: '/rest/suporteService?ticketId=' + ticketId,
+                type: 'GET',
+                headers: tokenAutenticacao ? { "Authorization": "Bearer " + tokenAutenticacao } : null,
+                success: callbackSuccess,
+                error: callbackFail
+            });
+
+            function callbackSuccess(response) {
+                $('.card-title').html(`Ticket #${response.id}`);
+                $('#tituloTicket').html(`${response.assunto}`);
+                $('#selectEstado').val(response.estadoAtual);
+                let htmlMensagens = '';
+                for (let mensagem of response.mensagens) {
+                    const data = new Date(mensagem.dataCriacao);
+                    htmlMensagens += `<div class="mensagem" id="mensagem-${mensagem.id}">
+            <h3 class="dataMensagem"></h3>
+            <p>${mensagem.conteudo} – Por ${mensagem.autor.nome}, ${data.toLocaleString({ timeStyle: 'short' })}</p>
+            </div>`;
+                }
+                $('#divMensagens').html(htmlMensagens);
+
+            }
+
+            function callbackFail(response) {
+                console.log(response)
+            }
+        }
+
+        function obterListaEstados() {
+            requestService("/rest/suporteService/estado", 'GET', null, callbackSuccess, callbackFail);
+
+            function callbackSuccess(response) {
+                let input = $("#selectEstado");
+                let htmlOptions = '';
+                for (let estado of response) {
+                    htmlOptions += `<option value="${estado}">${estado}</option>`;
+                }
+                input.html(htmlOptions);
+            }
+            function callbackFail(response) {
+                console.log(response);
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -32,10 +128,10 @@
                 <h3>Suporte - Atendimento</h3>
 
                 <div class="table-responsive">
-                    <table class="table mt-3" id="tableSuporte">
+                    <table class="table mt-3" id="tableTickets">
                         <thead>
                             <tr>
-                                <th scope="col">User ID</th>
+                                <th scope="col">Ticket ID</th>
                                 <th scope="col">Nome de usuário</th>
                                 <th scope="col">Título da requisição</th>
                             </tr>
@@ -63,32 +159,111 @@
 
             <div class="col-5">
                 <h1>Detalhes - Suporte</h1>
-                <form id="formSuporte" action="/rest/SuporteService" method="PUT">
-                    <div class="form-group row">
-                        <label for="inputUserID" class="col-md-2">User ID</label> <input type="text"
-                            class="form-control col-md-9" id="inputUserID" name="id" required readonly>
-                    </div>
-                    <div class="form-group row">
-                        <label for="inputNome" class="col-md-2">Nome de usuário</label> <input type="text"
-                            class="form-control col-md-9" id="inputNome" name="nome" required readonly>
-                    </div>
+                <div class="form-group row">
+                    <label for="inputUserID" class="col-md-2">User ID</label> <input type="text"
+                        class="form-control col-md-9" id="inputUserID" name="id" required readonly>
+                </div>
+                <div class="form-group row">
+                    <label for="inputNome" class="col-md-2">Nome de usuário</label> <input type="text"
+                        class="form-control col-md-9" id="inputNome" name="nome" required readonly>
+                </div>
 
-                    <div class="card">
-                            <h5 class="card-header">Dúvida</h5>
-                            <div class="card-body">
-                              <h5 class="card-title">Como eu faço para me tornar um moderador?</h5>
-                              <p class="card-text">Olá, eu gostaria de me tornar um moderador da plataforma do JogoTrivia. Como devo proceder?</p>
-                              <hr>
-                              <textarea class="card-text col-md-12" type="text" placeholder="Resposta do suporte"></textarea>
-                              <hr>
-                              <div class="form-group row">
-                                    <button type="submit" class="btn btn-block btn-primary col-3 ml-3">Responder</button>
+                <div class="card">
+                    <div class="card-body">
+                        <div>
+                            <h1 class="card-title">Ticket</h1>
+                            <h2 id="tituloTicket"></h2>
+                            <div id="divMensagens"></div>
+                            <form id="formMensagem" action="/rest/suporteService/mensagem" method="POST">
+                                <input type="hidden" id="inputTicketId" name="ticketId">
+                                <div class="form-group">
+                                    <label for="inputMensagem">Mensagem</label>
+                                    <textarea class="form-control" id="inputMensagem" name="mensagem"
+                                        rows="3"></textarea>
                                 </div>
-                            </div>
-                          </div>
-                    
-                     
-                </form>
+                                <div class="wrapperBotoes">
+                                    <div>
+                                        <button type="submit" class="btn btn-primary btn-block">Enviar mensagem</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div>
+                            <form id="formEstado" action="/rest/suporteService/estado" method="POST">
+                                <input type="hidden" id="inputTicketId" name="ticketId">
+                                <select class="custom-select" id="selectEstado" name="estado"></select>
+                                <div class="wrapperBotoes">
+                                    <div>
+                                        <button type="submit" class="btn btn-success btn-block">Salvar estado</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <script>
+                            obterListaEstados();
+                            $("#formMensagem").submit(function (event) {
+                                event.preventDefault();
+                                let service = $(this).attr("action"); //get form action url
+                                let method = $(this).attr("method"); //get form GET/POST method
+                                let data = formToJson(this); //Encode form elements for submission
+                                const userInfo = getCookie("userInfo");
+                                let tokenAutenticacao = null;
+                                if (userInfo) {
+                                    tokenAutenticacao = userInfo.token;
+                                }
+                                $.ajax({
+                                    url: service,
+                                    type: method,
+                                    data: data,
+                                    contentType: "application/x-www-form-urlencoded",
+                                    headers: tokenAutenticacao ? { "Authorization": "Bearer " + tokenAutenticacao } : null,
+                                    success: callbackSuccess,
+                                    error: callbackFail
+                                });
+                                function callbackSuccess(response) {
+                                    atualizarMensagens(response.id);
+                                }
+
+                                function callbackFail(response) {
+                                    $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+                                }
+                            });
+
+                            $("#formEstado").submit(function (event) {
+                                event.preventDefault();
+                                let service = $(this).attr("action"); //get form action url
+                                let method = $(this).attr("method"); //get form GET/POST method
+                                let data = formToJson(this); //Encode form elements for submission
+                                const userInfo = getCookie("userInfo");
+                                let tokenAutenticacao = null;
+                                if (userInfo) {
+                                    tokenAutenticacao = userInfo.token;
+                                }
+                                $.ajax({
+                                    url: service,
+                                    type: method,
+                                    data: data,
+                                    contentType: "application/x-www-form-urlencoded",
+                                    headers: tokenAutenticacao ? { "Authorization": "Bearer " + tokenAutenticacao } : null,
+                                    success: callbackSuccess,
+                                    error: callbackFail
+                                });
+
+
+                                function callbackSuccess(response) {
+                                    atualizarMensagens(response.id);
+                                    $("#divFeedback").html("Estado alterado").removeClass().addClass("alert").addClass("alert-success");
+                                }
+
+                                function callbackFail(response) {
+                                    $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+
+
                 <div id="divFeedback"></div>
                 <script>
                     $("#formSuporte").submit(function (event) {

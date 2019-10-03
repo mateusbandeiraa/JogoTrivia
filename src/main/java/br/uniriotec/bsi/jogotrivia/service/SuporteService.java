@@ -18,8 +18,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.persistence.TicketDao;
+import br.uniriotec.bsi.jogotrivia.suporte.EstadoTicket;
 import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
 import br.uniriotec.bsi.jogotrivia.suporte.Ticket;
 
@@ -55,6 +57,14 @@ public class SuporteService {
 		}
 	}
 
+	@GET
+	@Autenticado(Privilegio.MODERADOR)
+	@Path("/todos")
+	public Response obterTodosTickets() {
+		List<Ticket> tickets = new TicketDao().selectAll();
+		return buildResponse(Status.OK, tickets);
+	}
+
 	@POST
 	@Autenticado
 	@Path("/mensagem")
@@ -71,6 +81,45 @@ public class SuporteService {
 		td.update(ticketSanetizado);
 
 		return buildResponse(Status.ACCEPTED, ticketSanetizado);
+	}
+
+	@GET
+	@Path("/estado")
+	public Response getEstados() {
+		return buildResponse(Status.OK, EstadoTicket.values());
+	}
+
+	@POST
+	@Autenticado(Privilegio.MODERADOR)
+	@Path("/estado")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response setEstado(@FormParam("ticketId") String ticketId, @FormParam("estado") String estado,
+			@Context SecurityContext securityContext) {
+		EstadoTicket estadoTicket = null;
+		
+		for(EstadoTicket e: EstadoTicket.values()) {
+			if(e.toString().equals(estado)) {
+				estadoTicket = e;
+				break;
+			}
+		}
+		if(estadoTicket == null) {
+			buildResponse(Status.BAD_REQUEST, "Estado inválido");
+		}
+		
+		TicketDao td = new TicketDao();
+		
+		Ticket ticket = td.select(Integer.valueOf(ticketId));
+		
+		if(ticket == null) {
+			buildResponse(Status.BAD_REQUEST, "Ticket inválido");
+		}
+		
+		ticket.setEstadoAtual(estadoTicket);
+		
+		td.update(ticket);
+		
+		return buildResponse(Status.OK, ticket);
 	}
 
 }

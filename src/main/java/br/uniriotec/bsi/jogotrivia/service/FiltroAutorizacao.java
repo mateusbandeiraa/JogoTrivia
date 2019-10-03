@@ -48,12 +48,13 @@ public class FiltroAutorizacao implements ContainerRequestFilter {
 
 			// Check if the user is allowed to execute the method
 			// The method annotations override the class annotations
-			if (!privilegiosMetodo.isEmpty()) {
-				checarPermissoes(privilegiosClasse);
+			if (!privilegiosMetodo.isEmpty() || !privilegiosClasse.isEmpty()) {
+				if (privilegiosMetodo.isEmpty()) {
+					checarPermissoes(privilegiosClasse);
+				} else {
+					checarPermissoes(privilegiosMetodo);
+				}
 			}
-//			else {
-//				checarPermissoes(privilegiosMetodo);
-//			}
 
 		} catch (Exception e) {
 			requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
@@ -78,9 +79,9 @@ public class FiltroAutorizacao implements ContainerRequestFilter {
 	private void checarPermissoes(List<Privilegio> privilegiosAutorizados) throws Exception {
 		String userId = securityContext.getUserPrincipal().getName();
 		Usuario usuario = new UsuarioDao().select(Integer.valueOf(userId));
-		
-		for(Privilegio privilegio : privilegiosAutorizados) {
-			if(privilegio.equals(usuario.getPrivilegio())) {
+
+		for (Privilegio privilegio : privilegiosAutorizados) {
+			if (privilegio.equals(usuario.getPrivilegio())) {
 				return;
 			}
 		}
