@@ -32,7 +32,7 @@ public class QuestaoService {
 
 		List<Opcao> opcoesSanetizadas = new ArrayList<>();
 		Opcao opcaoCorreta = null;
-		
+
 		for (Opcao opcao : questaoJson.getOpcoes()) {
 			Opcao opcaoSanetizada = new Opcao(opcao.getTexto(), opcao.isRemovivel());
 			opcoesSanetizadas.add(opcaoSanetizada);
@@ -61,12 +61,14 @@ public class QuestaoService {
 	}
 
 	@GET
-	@Consumes()
 	public Response get(@QueryParam("idQuestao") Integer idQuestao) {
 		QuestaoDao qd = new QuestaoDao();
-
-		Questao q = qd.select(idQuestao);
-
-		return buildResponse(Status.OK, q);
+		if (idQuestao != null) {
+			Questao questao = qd.select(idQuestao);
+			return buildResponse(Status.OK, questao);
+		} else {
+			List<Questao> questoes = qd.selectAll();
+			return buildResponse(Status.OK, questoes);
+		}
 	}
 }

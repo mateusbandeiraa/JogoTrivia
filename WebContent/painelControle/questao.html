@@ -15,7 +15,7 @@
     <!--load all styles -->
     <link rel="stylesheet" type="text/css" media="screen" href="../main.css" />
     <style>
-        #tableUsuarios tbody>tr:hover {
+        #tableQuestoes tbody>tr:hover {
             cursor: pointer;
             background-color: cadetblue;
             color: white;
@@ -24,21 +24,24 @@
     <script>
 
         function atualizarTabela() {
-            let bodyTabela = $("#tableUsuarios>tbody");
+            let bodyTabela = $("#tableQuestoes>tbody");
             requestService("/rest/questaoService", 'GET', null, callbackSuccess, callbackFail);
 
             function callbackSuccess(response) {
                 let htmlBody = '';
-                for (let usuario of response) {
-                    let htmlLinha = `<tr data-userid="${usuario.id}">
-                            <td>${usuario.nome}</td>
-                            <td>${usuario.email}</td>
-                            <td>${usuario.privilegio}</td>
+                for (let questao of response) {
+                    let opcoes = "";
+                    for (let opcao of questao.opcoes) {
+                        opcoes += opcao.texto + "; ";
+                    }
+                    let htmlLinha = `<tr data-questaoid="${questao.id}">
+                            <td>${questao.textoPergunta}</td>
+                            <td>${opcoes}</td>
                           </tr>`;
                     htmlBody += htmlLinha;
                 }
                 bodyTabela.html(htmlBody).promise().done(() => {
-                    $("tr[data-userid]").click((elemento) => atualizarDadosUsuario(elemento.currentTarget.getAttribute('data-userid')));
+                    $("tr[data-questaoid]").click((elemento) => atualizarDadosQuestao(elemento.currentTarget.getAttribute('data-questaoid')));
                 });
             }
 
@@ -58,22 +61,23 @@
                 }
             }
         }
-        function atualizarDadosUsuario(idUsuario) {
-            requestService('/rest/questaoService', 'GET', { "id": idUsuario }, callbackSuccess, callbackFail);
+        function atualizarDadosQuestao(idQuestao) {
+            requestService('/rest/questaoService', 'GET', { "idQuestao": idQuestao }, callbackSuccess, callbackFail);
 
             function callbackSuccess(response) {
                 for (let i in response) {
-                    if (i == 'ativo') {
-                        let check = $(`input[name=${i}]`);
-                        if (response[i]) {
-                            $(check).prop("checked", true);
-                        } else {
-                            $(check).prop("checked", false);
+                    if (i == 'opcoes') {
+                        const letras = ['A', 'B', 'C', 'D'];
+                        let index = 0;
+                        for (let opcao in response[i]) {
+                            const letraQuestao = letras[i++];
+                            $(`input[name=opcao${letraQuestao}]`).val(opcao.texto);
+                            if (opcao.removivel) {
+                                $(`input[name=optradio]`).val(letraQuestao);
+                            }
                         }
-                    } else if (i == 'dataCadastro') {
-                        $(`input[name=${i}]`).val(new Date(response[i]).toLocaleDateString());
-                    } else if (i == 'privilegio') {
-                        $(`select[name=${i}]`).val(response[i]);
+                    } else if (i == 'textoPergunta') {
+                        $(`textArea[name=textoPergunta]`).html(response[i]);
                     } else {
                         $(`input[name=${i}]`).val(response[i]);
                     }
@@ -113,7 +117,7 @@
                 </ul>
 
                 <div class="table-responsive">
-                    <table class="table" id="tableUsuarios">
+                    <table class="table" id="tableQuestoes">
                         <thead>
                             <tr>
                                 <th scope="col">Questão</th>
