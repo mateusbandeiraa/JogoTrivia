@@ -69,8 +69,8 @@
                     if (i == 'opcoes') {
                         const letras = ['A', 'B', 'C', 'D'];
                         let index = 0;
-                        for (let opcao in response[i]) {
-                            const letraQuestao = letras[i++];
+                        for (let opcao of response[i]) {
+                            const letraQuestao = letras[index++];
                             $(`input[name=opcao${letraQuestao}]`).val(opcao.texto);
                             if (opcao.removivel) {
                                 $(`input[name=optradio]`).val(letraQuestao);
@@ -173,25 +173,25 @@
 
             <div class="col-5">
                 <h2>Editar questão</h2>
-                <form id="formQuestao" action="/rest/questaoService" method="POST">
-
+                <form id="formQuestao" action="/rest/questaoService">
+                    <input type="hidden" name="id">
                     <textarea class="text-area-questao mb-2 col-md-9" rows="5" id="textoPergunta"
-                        name="textoPergunta">Quantos cocos uma andorinha carrega?</textarea>
+                        name="textoPergunta"></textarea>
                     <div class="radio">
                         <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input class="ml-2 col-md-8"
-                            type="text" value="1" name="opcaoA">
+                            type="text" value="" name="opcaoA">
                     </div>
                     <div class="radio">
                         <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input class="ml-2 col-md-8"
-                            type="text" value="0" name="opcaoB">
+                            type="text" value="" name="opcaoB">
                     </div>
                     <div class="radio">
                         <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
-                            class="ml-2 col-md-8" type="text" value="Europeias ou americanas?" name="opcaoC">
+                            class="ml-2 col-md-8" type="text" value="" name="opcaoC">
                     </div>
                     <div class="radio">
                         <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input class="ml-2 col-md-8"
-                            type="text" value="Guarapari Buzios" name="opcaoD">
+                            type="text" value="" name="opcaoD">
                     </div>
 
                     <div class="form-group-row mt-2">
@@ -209,20 +209,25 @@
 
                     <div class="form-group btn-toolbar row mt-2">
                         <div class="btn-group mr-2 ml-3">
-                            <button type="submit" class="btn btn-block btn-primary">Salvar</button>
+                            <button type="submit" class="btn btn-block btn-primary" id="btnSalvar">Salvar</button>
                         </div>
 
                         <div class="btn-group mr-2">
-                            <button type="submit" class="btn btn-block btn-primary">Salvar Cópia</button>
+                            <button type="submit" class="btn btn-block btn-primary" id="btnSalvarCopia">Salvar
+                                Cópia</button>
                         </div>
 
                         <div class="btn-group mr-2">
-                            <button type="submit" class="btn btn-block btn-danger">Excluir</button>
+                            <button type="submit" class="btn btn-block btn-danger" id="btnExcluir">Excluir</button>
                         </div>
                     </div>
                 </form>
                 <div id="divFeedback"></div>
                 <script>
+                    $("#btnSalvar").click(() => $("#formQuestao").attr('method', 'PUT'));
+                    $("#btnSalvarCopia").click(() => $("#formQuestao").attr('method', 'POST'));
+                    $("#btnExcluir").click(() => $("#formQuestao").attr('method', 'DELETE'));
+
                     $("#formQuestao").submit(function (event) {
                         event.preventDefault();
                         let post_url = $(this).attr("action"); //get form action url
@@ -244,12 +249,13 @@
                     });
 
                     function callbackSuccess(response) {
-                        $("#divFeedback").html("Questão salva").removeClass().addClass("alert").addClass("alert-success");
+                        $("#divFeedback").html("Alterações salvas").removeClass().addClass("alert").addClass("alert-success");
                         atualizarTabela();
                     }
 
                     function callbackFail(response) {
                         $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+                        atualizarTabela();
                     }
                 </script>
 
