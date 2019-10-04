@@ -169,38 +169,39 @@
 
             <div class="col-5">
                 <h2>Editar questão</h2>
-                <form id="formQuestao" action="/rest/questaoService" method="PUT">
+                <form id="formQuestao" action="/rest/questaoService" method="POST">
 
-                    <textarea class="text-area-questao mb-2 col-md-9" rows="5">Quantos cocos uma andorinha carrega?
-                    </textarea>
+                    <textarea class="text-area-questao mb-2 col-md-9" rows="5" id="textoPergunta"
+                        name="textoPergunta">Quantos cocos uma andorinha carrega?</textarea>
                     <div class="radio">
-                        <input class="mr-1 mb-3" type="radio" name="optradio">A)<input class="ml-2 col-md-8" type="text"
-                            value="1">
+                        <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input class="ml-2 col-md-8"
+                            type="text" value="1" name="opcaoA">
                     </div>
                     <div class="radio">
-                        <input class="mr-1 mb-3" type="radio" name="optradio">B)<input class="ml-2 col-md-8" type="text"
-                            value="0">
+                        <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input class="ml-2 col-md-8"
+                            type="text" value="0" name="opcaoB">
                     </div>
                     <div class="radio">
-                        <input class="mr-1 mb-3" type="radio" name="optradio" checked>C)<input class="ml-2 col-md-8"
-                            type="text" value="Europeias ou americanas?">
+                        <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
+                            class="ml-2 col-md-8" type="text" value="Europeias ou americanas?" name="opcaoC">
                     </div>
                     <div class="radio">
-                        <input class="mr-1 mb-3" type="radio" name="optradio">D)<input class="ml-2 col-md-8" type="text"
-                            value="Guarapari Buzios">
+                        <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input class="ml-2 col-md-8"
+                            type="text" value="Guarapari Buzios" name="opcaoD">
                     </div>
 
                     <div class="form-group-row mt-2">
                         <i class="far fa-clock fa-3x"></i>
-                        <label>Limite de <input type="number" value="15" class="segundos"></label> segundos
+                        <label>Limite de <input type="number" value="15" class="segundos"
+                                name="tempoDisponivel"></label> segundos
                     </div>
 
-                    <div class="form-group mt-2">
+                    <!-- <div class="form-group mt-2">
                         <h3>Assuntos</h3>
                         <textarea class="mb-2 col-md-9"
                             rows="5">Conhecimentos Gerais, Monty Python, Geografia, Biologia</textarea>
 
-                    </div>
+                    </div> -->
 
                     <div class="form-group btn-toolbar row mt-2">
                         <div class="btn-group mr-2 ml-3">
@@ -223,13 +224,23 @@
                         let post_url = $(this).attr("action"); //get form action url
                         let request_method = $(this).attr("method"); //get form GET/POST method
                         let form_data = formToJson(this); //Encode form elements for submission
+                        form_data.opcoes = [];
 
-                        form_data.ativo = form_data.ativo == "on" ? true : false;
+                        for (let letra of ['A', 'B', 'C', 'D']) {
+                            let opcao = {
+                                texto: form_data[`opcao${letra}`],
+                                correta: form_data.optradio == letra
+                            }
+                            form_data.opcoes.push(opcao);
+                            delete form_data[`opcao${letra}`];
+                        }
+                        delete form_data.optradio;
+
                         requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
                     });
 
                     function callbackSuccess(response) {
-                        $("#divFeedback").html("Usuário atualizado").removeClass().addClass("alert").addClass("alert-success");
+                        $("#divFeedback").html("Questão salva").removeClass().addClass("alert").addClass("alert-success");
                         atualizarTabela();
                     }
 
