@@ -76,3 +76,17 @@ function getURLParameter(sParam) {
         }
     }
 }
+
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+
+
+$(function () {
+    $('input[type=checkbox]').on('change', function (e) {
+        if ($('input[type=checkbox]:checked').length > 2) {
+            $(this).prop('checked', false);
+            alert("permitidos apenas 2");
+        }
+    });
+})
