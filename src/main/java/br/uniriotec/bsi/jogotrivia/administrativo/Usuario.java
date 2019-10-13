@@ -40,7 +40,7 @@ public class Usuario {
 	@Column(nullable = false, columnDefinition = "boolean default true")
 	private boolean ativo;
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR') DEFAULT 'USUARIO'")
+	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
 	private Privilegio privilegio = Privilegio.USUARIO;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {

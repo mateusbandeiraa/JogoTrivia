@@ -42,7 +42,7 @@
 		$('[href="/login.html"]').hide();
 		$('[href="/cadastro.html"]').hide();
 
-		if (token.usuario.privilegio != "MODERADOR") {
+		if (token.usuario.privilegio != "MODERADOR" && token.usuario.privilegio != "ANFITRIAO") {
 			$('[href="/painelControle/painelControle.html"]').hide();
 		}
 	}
