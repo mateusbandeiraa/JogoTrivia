@@ -17,6 +17,9 @@ import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 public abstract class ServiceUtils {
 
 	public static Usuario obterUsuarioPorSecurityContext(SecurityContext context) {
+		if (context == null || context.getUserPrincipal() == null) {
+			return null;
+		}
 		int idUsuarioAutenticado = Integer.valueOf(context.getUserPrincipal().getName());
 		Usuario usuarioAutenticado = new UsuarioDao().select(idUsuarioAutenticado);
 		return usuarioAutenticado;
