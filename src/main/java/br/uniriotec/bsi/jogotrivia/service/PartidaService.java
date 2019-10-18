@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -18,6 +19,8 @@ import javax.ws.rs.core.Response.Status;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.gameplay.Partida;
+import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
+import br.uniriotec.bsi.jogotrivia.persistence.PartidaDao;
 
 @Path("/partidaService")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -35,11 +38,18 @@ public class PartidaService {
 
 		return buildResponse(Status.OK, partidas);
 	}
-	
+
 	@POST
-	@Autenticado({Privilegio.MODERADOR})
-	public Response criarPartida(Partida partida) {
-		return null;
+	@Autenticado({ Privilegio.MODERADOR, Privilegio.ANFITRIAO })
+	public Response criarPartida(@BeanParam() Partida partida, @BeanParam() String[] idsQuestoes) {
+		PartidaDao pd = new PartidaDao();
+		for (String id : idsQuestoes) {
+			Questao q = new Questao();
+			q.setId(Integer.valueOf(id));
+			partida.inserirRodada(q);
+		}
+		pd.insert(partida);
+		return buildResponse(Status.ACCEPTED, "Partida criada");
 	}
 
 }

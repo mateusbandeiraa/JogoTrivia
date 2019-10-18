@@ -28,15 +28,15 @@
                     opcoes += opcao.texto + "; ";
                 }
                 let htmlLinha =
-                    `<tr data-questaoid="${questao.id}">
+                    `<tr data-id-questao="${questao.id}">
                         <td>${questao.textoPergunta}</td>
                         <td>${opcoes}</td>
                         <td><input type="checkbox" data-id-questao="${questao.id}"></td>
-                      </tr>`;
+                    </tr>`;
                 htmlBody += htmlLinha;
             }
             bodyTabela.html(htmlBody).promise().done(() => {
-                $("tr[data-questaoid]").click((elemento) => atualizarDadosQuestao(elemento.currentTarget.getAttribute('data-questaoid')));
+                $("tr[data-id-questao]").click((elemento) => atualizarDadosQuestao(elemento.currentTarget.getAttribute('data-id-questao')));
             });
         }
 
@@ -66,15 +66,14 @@
             <div class="col-6">
                 <h2>Criar Partida</h2>
 
-                <form id="formcriarpartida" action="/rest/criarpartidaService">
+                <form id="formcriarpartida" action="/rest/partidaService">
                     <div class="form-group">
 
                         <input class="col-md-8 mb-2 form-control" id="nomePartida" type="text" value=""
-                            name="nome" placeholder="Escolha um nome para a partida">
+                            name="nome" placeholder="Escolha um nome para a partida" required>
                         <label for="dataPartida" class="mt-2">Escolha a data de início a partida:</label>
                         <input class="col-md-8 mb-2 form-control" id="dataPartida" type="datetime" name="data"
-                            min="2019-10-18" placeholder="Escolha uma data">
-
+                            min="2019-10-18" placeholder="Escolha uma data" required>
 
                         <div class="form-inline mb-3">
                             <h3> Questões selecionadas</h3>
@@ -120,12 +119,7 @@
 
                         <div class="form-group btn-toolbar row mt-2">
                             <div class="btn-group mr-2 ml-3">
-                                <button type="submit" class="btn btn-block btn-primary" id="btnSalvar">Salvar</button>
-                            </div>
-
-                            <div class="btn-group mr-2">
-                                <button type="submit" class="btn btn-block btn-primary" id="btnSalvarCopia">Salvar
-                                    Cópia</button>
+                                <button type="submit" class="btn btn-block btn-primary" id="btnSalvar">Criar Partida</button>
                             </div>
 
                             <div class="btn-group mr-2">
@@ -137,28 +131,30 @@
                 <div id="divFeedback"></div>
                 <script>
         			$("#data").value = new Date();
-                    $("#btnSalvar").click(() => $("#formcriarpartida").attr('method', 'PUT'));
-                    $("#btnSalvarCopia").click(() => $("#formcriarpartida").attr('method', 'POST'));
+                    $("#btnSalvar").click(() => $("#formcriarpartida").attr('method', 'POST'));
                     $("#btnExcluir").click(() => $("#formcriarpartida").attr('method', 'DELETE'));
 
                     $("#formcriarpartida").submit(function (event) {
                         event.preventDefault();
                         let post_url = $(this).attr("action"); //get form action url
                         let request_method = $(this).attr("method"); //get form GET/POST method
-                        let form_data = formToJson(this); //Encode form elements for submission
-                        form_data.opcoes = [];
+                        let partida_data = formToJson(this); //Encode form elements for submission
+                        partida_data.dataInicio = new Date(this.data);
+                        let form_data = {partida: partida_data};
+                        
+                        let questoes = $("#tableQuestoesSelecionadas tr[data-id-questao]");
 
-                        for (let letra of ['A', 'B', 'C', 'D']) {
-                            let opcao = {
-                                texto: form_data[`opcao${letra}`],
-                                correta: form_data.optradio == letra
-                            }
-                            form_data.opcoes.push(opcao);
-                            delete form_data[`opcao${letra}`];
+                        let idsQuestoes = [];
+
+                        for(let questaoTr of questoes){
+                            let id = questaoTr.getAttribute("data-id-questao");
+                            idsQuestoes.push(id);
                         }
-                        delete form_data.optradio;
+                        form_data['idsQuestoes'] = idsQuestoes;
 
-                        requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+                        // requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+
+                        $("#divFeedback").html("Partida criada!").removeClass().addClass("alert").addClass("alert-success");
                     });
 
                     function callbackSuccess(response) {
@@ -213,17 +209,17 @@
                     atualizarTabela();
                     let questoes = [];
                     $("#btnAdicionarQuestao").click(() => {
-                        let checkboxes = $("input[type=checkbox][data-id-questao]");
+                        let checkboxes = $("#tableQuestoes input[type=checkbox][data-id-questao]");
                         for (let checkbox of checkboxes) {
                             if (checkbox.checked) {
-                                let trQuestao = $(`tr[data-questaoid=${checkbox.getAttribute('data-id-questao')}]`);
+                                let trQuestao = $(`tr[data-id-questao=${checkbox.getAttribute('data-id-questao')}]`);
                                 questoes.push(trQuestao);
                                 trQuestao.remove();
                             }
                         }
                         let htmlBody = "";
                         for (let questao of questoes) {
-                            htmlBody += questao.html();
+                            htmlBody += questao[0].outerHTML;
                         }
 
                         $("#tableQuestoesSelecionadas tbody").html(htmlBody);

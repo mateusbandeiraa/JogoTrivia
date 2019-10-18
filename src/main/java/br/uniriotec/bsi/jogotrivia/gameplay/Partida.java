@@ -1,6 +1,7 @@
 package br.uniriotec.bsi.jogotrivia.gameplay;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderColumn;
 import javax.xml.bind.annotation.XmlElement;
 
 @Entity
@@ -21,7 +23,8 @@ public class Partida {
 	@Column(nullable = false)
 	private String nome;
 	@OneToMany
-	private List<Rodada> rodadas;
+	@OrderColumn
+	private List<Rodada> rodadas = new ArrayList<Rodada>();
 	@OneToOne
 	private Rodada rodadaAtual;
 	@Column(nullable = false)
@@ -51,12 +54,17 @@ public class Partida {
 
 	@XmlElement
 	public int quantidadeRodadas() {
-		return 15; //TODO EDIT
+		return 2; //TODO EDIT
 	}
 	
 	@XmlElement
 	public int quantidadeParticipantes() {
-		return 34;
+		return 0; //TODO EDIT
+	}
+	
+	public void inserirRodada(Questao questao) {
+		Rodada rodada = new Rodada(questao);
+		this.rodadas.add(rodada);
 	}
 
 	public int getId() {

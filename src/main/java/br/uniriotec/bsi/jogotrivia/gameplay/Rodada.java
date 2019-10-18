@@ -21,4 +21,46 @@ public class Rodada {
 	@Column
 	private Date dataInicio;
 	// List<Palpite>
+
+	public int getId() {
+		return id;
+	}
+
+	public Rodada() {
+		super();
+	}
+
+	public Rodada(Questao questao) {
+		this();
+		this.questao = questao;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public Questao getQuestao() {
+		return questao;
+	}
+
+	public void setQuestao(Questao questao) {
+		this.questao = questao;
+	}
+
+	public int getTempoExtra() {
+		return tempoExtra;
+	}
+
+	public void setTempoExtra(int tempoExtra) {
+		this.tempoExtra = tempoExtra;
+	}
+
+	public Date getDataInicio() {
+		return dataInicio;
+	}
+
+	public void setDataInicio(Date dataInicio) {
+		this.dataInicio = dataInicio;
+	}
+
 }
