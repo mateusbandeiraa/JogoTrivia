@@ -81,30 +81,16 @@ function getURLParameter(sParam) {
     }
 }
 
-var today = new Date();
-var dd = today.getDate();
-var mm = today.getMonth()+1; //January is 0!
-var yyyy = today.getFullYear();
- if(dd<10){
-        dd='0'+dd
-    } 
-    if(mm<10){
-        mm='0'+mm
-    } 
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
 
-today = yyyy+'-'+mm+'-'+dd;
-document.getElementById("datefield").setAttribute("min", today);
 
-function toggle(source) {
-    checkboxes = document.getElementsByName('checkbox');
-    for(var i=0, n=checkboxes.length;i<n;i++) {
-      checkboxes[i].checked = source.checked;
-    }
-  }
-
-  function toggleC(source) {
-    checkboxes = document.getElementsByName('listaQuestoes');
-    for(var i=0, n=checkboxes.length;i<n;i++) {
-      checkboxes[i].checked = source.checked;
-    }
-  }
+$(function () {
+    $('input[type=checkbox]').on('change', function (e) {
+        if ($('input[type=checkbox]:checked').length > 2) {
+            $(this).prop('checked', false);
+            alert("permitidos apenas 2");
+        }
+    });
+})

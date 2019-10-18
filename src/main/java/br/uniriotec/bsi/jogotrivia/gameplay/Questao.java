@@ -8,9 +8,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Transient;
+
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 
 @Entity
 public class Questao {
@@ -19,6 +22,8 @@ public class Questao {
 	private int id;
 	private String textoPergunta;
 	private int tempoDisponivel; // em segundos
+	@ManyToOne(optional = false)
+	private Usuario autor;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	// @JoinTable()
@@ -29,14 +34,15 @@ public class Questao {
 
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel) {
+	public Questao(String textoPergunta, int tempoDisponivel, Usuario autor) {
 		this();
 		this.textoPergunta = textoPergunta;
 		this.tempoDisponivel = tempoDisponivel;
+		this.autor = autor;
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel, List<Opcao> opcoes) {
-		this(textoPergunta, tempoDisponivel);
+	public Questao(String textoPergunta, int tempoDisponivel, List<Opcao> opcoes, Usuario autor) {
+		this(textoPergunta, tempoDisponivel, autor);
 		this.opcoes = opcoes;
 	}
 
@@ -86,6 +92,14 @@ public class Questao {
 		}
 		this.opcoes = opcoes;
 		this.setOpcaoCorreta(correta);
+	}
+
+	public Usuario getAutor() {
+		return autor;
+	}
+
+	public void setAutor(Usuario autor) {
+		this.autor = autor;
 	}
 
 	@Transient
