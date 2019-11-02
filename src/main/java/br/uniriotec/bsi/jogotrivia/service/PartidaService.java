@@ -1,47 +1,75 @@
 package br.uniriotec.bsi.jogotrivia.service;
 
 import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
+import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.obterIp;
+import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.obterUsuarioPorSecurityContext;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.BeanParam;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.gameplay.EstadoPartida;
+import br.uniriotec.bsi.jogotrivia.gameplay.Participante;
 import br.uniriotec.bsi.jogotrivia.gameplay.Partida;
 import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
 import br.uniriotec.bsi.jogotrivia.persistence.PartidaDao;
+import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
+import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 
 @Path("/partidaService")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class PartidaService {
+	
+	public static final ParExclusoes EXCLUSOES_PARTIDA = new ParExclusoes(Partida.class, "rodadas", "rodadaAtual", "anfitriao");
+
+	@Context
+	SecurityContext securityContext;
+
+	private Usuario usuarioAutenticado;
+
+	private Usuario getUsuarioAutenticado() {
+		if (usuarioAutenticado == null) {
+			usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
+		}
+
+		return usuarioAutenticado;
+	}
 
 	@GET
 	public Response getPartidas(@QueryParam("idPartida") Integer idPartida) {
-		List<Partida> partidas = new ArrayList<>();
-		for (int i = 0; i < 3; i++) {
-			Partida p = new Partida("Conhecimentos gerais", new Date(1571268777000L + (929203 * i)));
-			p.setId(i);
-			partidas.add(p);
-		}
-
+		List<Partida> partidas = new PartidaDao().selectAll();
 		return buildResponse(Status.OK, partidas);
 	}
 
 	@POST
 	@Autenticado({ Privilegio.MODERADOR, Privilegio.ANFITRIAO })
-	public Response criarPartida(@BeanParam() Partida partida, @BeanParam() String[] idsQuestoes) {
+	public Response criarPartida(JsonNode message) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		Partida partida = mapper.treeToValue(message.get("partida"), Partida.class);
+		String[] idsQuestoes = mapper.treeToValue(message.get("idsQuestoes"), String[].class);
+
+		partida.setEstadoAtual(EstadoPartida.AGENDADA);
+
 		PartidaDao pd = new PartidaDao();
 		for (String id : idsQuestoes) {
 			Questao q = new Questao();
@@ -50,6 +78,54 @@ public class PartidaService {
 		}
 		pd.insert(partida);
 		return buildResponse(Status.ACCEPTED, "Partida criada");
+	}
+
+	@Path("criarPartidaPadrao")
+	@POST
+	@Autenticado({ Privilegio.MODERADOR, Privilegio.ANFITRIAO })
+	public Response criarPartidaPadrao() {
+		QuestaoDao qd = new QuestaoDao();
+
+		List<Questao> questoes = qd.selectAll();
+
+		Partida p = new Partida("Conhecimentos gerais", new Date(new Date().getTime() + 1000 * 60 * 5),
+				getUsuarioAutenticado(), new BigDecimal(50), new BigDecimal(10));
+
+		for (Questao questao : questoes) {
+			p.inserirRodada(questao);
+		}
+
+		new PartidaDao().insert(p);
+
+		return buildResponse(Status.ACCEPTED);
+	}
+	
+	@Path("cadastrarParticipante")
+	@POST
+	@Autenticado
+	public Response cadastrarParticipante(Participante participante, @Context HttpServletRequest request) {
+		String ip = request.getRemoteAddr();
+		String headerIp = obterIp(request);
+		
+		if(headerIp != null) {
+			ip = headerIp;
+		}
+		if(ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
+			ip = "9.9.9.9";
+		}
+		participante.setDataCriacao(new Date());
+		participante.setUsuario(getUsuarioAutenticado());
+		participante.setIp(ip);
+		
+		String local;
+		try {
+			local = ServiceUtils.obterLocalizacao(ip);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			local = "Área 42";
+		}
+		
+		return buildResponse(local);
 	}
 
 }

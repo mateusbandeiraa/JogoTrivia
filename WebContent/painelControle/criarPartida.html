@@ -108,7 +108,7 @@
                                 <label for="custoEntrada"><i class="fas fa-money-bill-alt fa-2x"></i> Custo de
                                     entrada: (R$)</label>
                                 <input class="col-md-3 mb-2 form-control" id="custoEntrada" type="number"
-                                    name="custoEntrada" step="0.50" value="10.00">
+                                    name="entrada" step="0.50" value="10.00">
                             </div>
                             <div class="form-group mt-2 col-md-6">
                                 <label for="premio"><i class="fas fa-trophy fa-2x"></i> Prêmio: (R$)</label>
@@ -125,6 +125,10 @@
                             <div class="btn-group mr-2">
                                 <button type="submit" class="btn btn-block btn-danger" id="btnExcluir">Excluir</button>
                             </div>
+
+                            <div class="btn-group mr-2 ml-3">
+                                <button type="submit" class="btn btn-block btn-primary" id="btnPartidaPadrao">Criar Partida Padrão</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -133,13 +137,15 @@
         			$("#data").value = new Date();
                     $("#btnSalvar").click(() => $("#formcriarpartida").attr('method', 'POST'));
                     $("#btnExcluir").click(() => $("#formcriarpartida").attr('method', 'DELETE'));
+                    $("#btnPartidaPadrao").click(criarPartidaPadrao);
 
                     $("#formcriarpartida").submit(function (event) {
                         event.preventDefault();
                         let post_url = $(this).attr("action"); //get form action url
                         let request_method = $(this).attr("method"); //get form GET/POST method
                         let partida_data = formToJson(this); //Encode form elements for submission
-                        partida_data.dataInicio = new Date(this.data);
+                        partida_data.dataInicio = new Date(partida_data.data);
+                        delete partida_data.data;
                         let form_data = {partida: partida_data};
                         
                         let questoes = $("#tableQuestoesSelecionadas tr[data-id-questao]");
@@ -152,10 +158,14 @@
                         }
                         form_data['idsQuestoes'] = idsQuestoes;
 
-                        // requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+                        requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
 
-                        $("#divFeedback").html("Partida criada!").removeClass().addClass("alert").addClass("alert-success");
+                        // $("#divFeedback").html("Partida criada!").removeClass().addClass("alert").addClass("alert-success");
                     });
+
+                    function criarPartidaPadrao(){
+                        requestService("/rest/partidaService/criarPartidaPadrao", "POST", null, callbackSuccess, callbackFail);
+                    }
 
                     function callbackSuccess(response) {
                         $("#divFeedback").html("Alterações salvas").removeClass().addClass("alert").addClass("alert-success");

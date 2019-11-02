@@ -5,15 +5,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.xml.bind.annotation.XmlElement;
+
+import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 
 @Entity
 public class Partida {
@@ -22,7 +28,7 @@ public class Partida {
 	private int id;
 	@Column(nullable = false)
 	private String nome;
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderColumn
 	private List<Rodada> rodadas = new ArrayList<Rodada>();
 	@OneToOne
@@ -35,31 +41,40 @@ public class Partida {
 	private BigDecimal premio = BigDecimal.ZERO;
 	@Column
 	private BigDecimal entrada = BigDecimal.ZERO;
+	
+	@ManyToOne(optional = false)
+	private Usuario anfitriao;
 
 	public Partida() {
 		super();
 	}
 
-	public Partida(String nome, Date dataInicio) {
+	public Partida(String nome, Date dataInicio, Usuario anfitriao) {
 		this();
 		this.nome = nome;
-		this.dataInicio = dataInicio;		
+		this.dataInicio = dataInicio;
+		this.setAnfitriao(anfitriao);
+		if(this.dataInicio.after(new Date())) {
+			this.estadoAtual = EstadoPartida.ENCERRADA;
+		} else {
+			this.estadoAtual = EstadoPartida.AGENDADA;
+		}
 	}
 
-	public Partida(String nome, Date dataInicio, BigDecimal premio, BigDecimal entrada) {
-		this(nome, dataInicio);
+	public Partida(String nome, Date dataInicio, Usuario anfitriao, BigDecimal premio, BigDecimal entrada) {
+		this(nome, dataInicio, anfitriao);
 		this.premio = premio;
 		this.entrada = entrada;
 	}
 
 	@XmlElement
 	public int quantidadeRodadas() {
-		return 2; //TODO EDIT
+		return this.getRodadas().size();
 	}
 	
 	@XmlElement
 	public int quantidadeParticipantes() {
-		return 0; //TODO EDIT
+		return 0; // TODO EDIT
 	}
 	
 	public void inserirRodada(Questao questao) {
@@ -130,5 +145,18 @@ public class Partida {
 	public void setEntrada(BigDecimal entrada) {
 		this.entrada = entrada;
 	}
+
+	public Usuario getAnfitriao() {
+		return anfitriao;
+	}
+
+	public void setAnfitriao(Usuario anfitriao) {
+		if (!(anfitriao.getPrivilegio() == Privilegio.ANFITRIAO || anfitriao.getPrivilegio() == Privilegio.MODERADOR)) {
+			throw new IllegalArgumentException("O anfitrião não tem os privilégios necessários.");
+		}
+		this.anfitriao = anfitriao;
+	}
+	
+	
 
 }
