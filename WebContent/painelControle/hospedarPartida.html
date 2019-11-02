@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Hospedando partida</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="/js/main.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="../fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+    <!--load all styles -->
+    <link rel="stylesheet" type="text/css" media="screen" href="../main.css" />
+    <script>
+
+        function atualizarTabela() {
+            let bodyTabela = $("#tableQuestoes>tbody");
+            requestService("/rest/questaoService", 'GET', null, callbackSuccess, callbackFail);
+
+            function callbackSuccess(response) {
+                let htmlBody = '';
+                for (let questao of response) {
+                    let opcoes = "";
+                    for (let opcao of questao.opcoes) {
+                        opcoes += opcao.texto + "; ";
+                    }
+                    let htmlLinha =
+                        `<tr data-id-questao="${questao.id}">
+                        <td>${questao.textoPergunta}</td>
+                        <td>${opcoes}</td>
+                        <td><input type="checkbox" data-id-questao="${questao.id}"></td>
+                    </tr>`;
+                    htmlBody += htmlLinha;
+                }
+                bodyTabela.html(htmlBody).promise().done(() => {
+                    $("tr[data-id-questao]").click((elemento) => atualizarDadosQuestao(elemento.currentTarget.getAttribute('data-id-questao')));
+                });
+            }
+
+            function callbackFail(response) {
+                if (response.status == 401) {
+                    let params = {
+                        "msg": "Você precisa fazer login para acessar essa página",
+                        "returnTo": window.location.href
+                    }
+                    window.location.href = "/login.html?" + $.param(params);
+                } else if (response.status == 403) {
+                    let params = {
+                        "msg": "Você precisa ser moderador para visualizar essa página",
+                        "returnTo": window.location.href
+                    }
+                    window.location.href = "/login.html?" + $.param(params);
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <nav class="triviaNav"></nav>
+    <div class="container-fluid">
+        <h2 class="ml-2">JogoTrivia - Hospedando partida em andamento</h2>
+        <hr>
+        <div class="row ml-2">
+            <div class="mt-2 ml-2 pr-3">
+                <i class="fas fa-users fa-4x"></i> <span style="font-size: 50px;">14</span>
+            </div>
+
+            <div class="mt-2 ml-2 pl-3">
+                <i class="fas fa-dollar-sign fa-4x"></i> <span style="font-size: 50px;">20</span>
+            </div>
+
+            <div class="mt-2 ml-2 pl-3 pr-3">
+                <span style="font-size: 50px;">Conhecimentos Gerais</span>
+            </div>
+
+            <button type="button" class="btn btn-secondary mr-3 mt-3 ml-2" style="width: 150px; height: 50px;"><i
+                    class="fas fa-pause fa-2x"></i> Pausar</button>
+            <button type="button" class="btn btn-danger ml-3 mt-3" style="width: 150px; height: 50px;"><i
+                    class="far fa-times-circle fa-2x"></i> Encerrar</button>
+
+        </div>
+        <hr>
+
+        <div class="row container-fluid">
+            <div class="col-4">
+
+                <form id="formcriarpartida" action="/rest/partidaService">
+                    <div class="form-group">
+
+
+
+                        <div class="form-inline mb-3">
+                            <h3> Questão atual</h3>
+                            <textarea class="text-area-questao mb-2 col-md-9" rows="5" id="textoPergunta"
+                                name="textoPergunta"> Quantos cocos uma andorinha carrega?</textarea>
+                            <div class="col-11 pl-0">
+                                <div class="radio">
+                                    <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input
+                                        class="ml-2 col-md-8" type="text" value="1" name="opcaoA">
+                                </div>
+                                <div class="radio">
+                                    <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input
+                                        class="ml-2 col-md-8" type="text" value="0" name="opcaoB">
+                                </div>
+                                <div class="radio">
+                                    <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
+                                        class="ml-2 col-md-8" type="text" value="Europeias ou americanas?"
+                                        name="opcaoC">
+                                </div>
+                                <div class="radio">
+                                    <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input
+                                        class="ml-2 col-md-8" type="text" value="Guarapari Buzios" name="opcaoD">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- <div class="form-group mt-2">
+                        <h3>Assuntos</h3>
+                        <textarea class="mb-2 col-md-9"
+                            rows="5">Conhecimentos Gerais, Monty Python, Geografia, Biologia</textarea>
+
+                    </div> -->
+
+                        <div class="form-row">
+                            <div class="form-group mt-2 col-md-6">
+                                <i class="far fa-check-circle fa-2x"></i>
+                                <span style="font-size: 30px;">4 respostas</span>
+                                <br>
+                                <label class="ml-4 pl-3"> Faltam 10</label>
+                            </div>
+                            <div class="form-group mt-2 col-md-6">
+                                <i class="far fa-clock fa-2x"></i>
+                                <span style="font-size: 30px;">4,65 s</span>
+                                <br>
+                                <label class="ml-4 pl-3"> Limite de 15 s</label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group mt-2 col-md-3">
+                                <input type="number" value="15" class="segundos" name="tempoDisponivel"
+                                    style="height: 38px;"> s
+                            </div>
+                            <div class="form-group mt-2 col-md-8">
+                                <button type="button" class="btn btn-primary">Aumentar tempo</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-2">
+
+                            <div class="form-row">
+                                <button type="submit" class="btn btn-block btn-danger" id="btnExcluir">Anular
+                                    questão</button>
+                            </div>
+
+
+                            <div class="form-row mt-2">
+                                <button type="submit" class="btn btn-block btn-secondary" id="btnExcluir"> Próxima
+                                    questão <i class="fas fa-chevron-right"></i></button>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+                <div id="divFeedback"></div>
+                <script>
+                    $("#data").value = new Date();
+                    $("#btnSalvar").click(() => $("#formcriarpartida").attr('method', 'POST'));
+                    $("#btnExcluir").click(() => $("#formcriarpartida").attr('method', 'DELETE'));
+
+                    $("#formcriarpartida").submit(function (event) {
+                        event.preventDefault();
+                        let post_url = $(this).attr("action"); //get form action url
+                        let request_method = $(this).attr("method"); //get form GET/POST method
+                        let partida_data = formToJson(this); //Encode form elements for submission
+                        partida_data.dataInicio = new Date(this.data);
+                        let form_data = { partida: partida_data };
+
+                        let questoes = $("#tableQuestoesSelecionadas tr[data-id-questao]");
+
+                        let idsQuestoes = [];
+
+                        for (let questaoTr of questoes) {
+                            let id = questaoTr.getAttribute("data-id-questao");
+                            idsQuestoes.push(id);
+                        }
+                        form_data['idsQuestoes'] = idsQuestoes;
+
+                        // requestService(post_url, request_method, form_data, callbackSuccess, callbackFail);
+
+                        $("#divFeedback").html("Partida criada!").removeClass().addClass("alert").addClass("alert-success");
+                    });
+
+                    function callbackSuccess(response) {
+                        $("#divFeedback").html("Alterações salvas").removeClass().addClass("alert").addClass("alert-success");
+                        atualizarTabela();
+                    }
+
+                    function callbackFail(response) {
+                        $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+                        atualizarTabela();
+                    }
+                </script>
+
+
+
+                <!-- </div> -->
+            </div>
+
+            <hr class="vertical">
+
+            <div class="form-group col-6">
+
+
+
+                <div class="form-inline mb-3">
+                    <h3> Próximas Questões</h3>
+                    <textarea class="text-area-questao mb-2 col-md-9 mt-3" rows="5" id="textoPergunta"
+                        name="textoPergunta"> Quantos cocos uma andorinha carrega?</textarea>
+                    <div class="col-11 pl-0">
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input
+                                class="ml-2 col-md-8" type="text" value="1" name="opcaoA">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input
+                                class="ml-2 col-md-8" type="text" value="0" name="opcaoB">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
+                                class="ml-2 col-md-8" type="text" value="Europeias ou americanas?" name="opcaoC">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input
+                                class="ml-2 col-md-8" type="text" value="Guarapari Buzios" name="opcaoD">
+                        </div>
+                        <i class="far fa-clock fa-2x"></i>
+                                <span style="font-size: 30px;">15 s</span>
+                        <hr>
+                    </div>
+
+
+                    <textarea class="text-area-questao mb-2 col-md-9 mt-3" rows="5" id="textoPergunta"
+                        name="textoPergunta"> Quantos cocos uma andorinha carrega?</textarea>
+                    <div class="col-11 pl-0">
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input
+                                class="ml-2 col-md-8" type="text" value="1" name="opcaoA">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input
+                                class="ml-2 col-md-8" type="text" value="0" name="opcaoB">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
+                                class="ml-2 col-md-8" type="text" value="Europeias ou americanas?" name="opcaoC">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input
+                                class="ml-2 col-md-8" type="text" value="Guarapari Buzios" name="opcaoD">
+                        </div>
+                        <i class="far fa-clock fa-2x"></i>
+                                <span style="font-size: 30px;">10 s</span>
+                        <hr>
+                    </div>
+
+
+
+                    <textarea class="text-area-questao mb-2 col-md-9 mt-3" rows="5" id="textoPergunta"
+                        name="textoPergunta"> Quantos cocos uma andorinha carrega?</textarea>
+                    <div class="col-11 pl-0">
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="A">A)<input
+                                class="ml-2 col-md-8" type="text" value="1" name="opcaoA">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="B">B)<input
+                                class="ml-2 col-md-8" type="text" value="0" name="opcaoB">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="C" checked>C)<input
+                                class="ml-2 col-md-8" type="text" value="Europeias ou americanas?" name="opcaoC">
+                        </div>
+                        <div class="radio">
+                            <input class="mr-1 mb-3" type="radio" name="optradio" value="D">D)<input
+                                class="ml-2 col-md-8" type="text" value="Guarapari Buzios" name="opcaoD">
+                        </div>
+                        <i class="far fa-clock fa-2x"></i>
+                                <span style="font-size: 30px;">20 s</span>
+                        <hr>
+                    </div>
+
+
+
+                   
+                </div>
+
+
+            </div>
+        </div>
+</body>
+
+</html>
