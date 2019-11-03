@@ -14,12 +14,16 @@ public class Dao<T> {
 	public Dao(Class<T> persistedClass) {
 		this.persistedClass = persistedClass;
 		if (emf == null)
-			this.setUp();
+			setUp();
 	}
 
-	private void setUp() {
+	protected static void setUp() {
 		String unit = "br.uniriotec.bsi.jogotrivia";
 		emf = Persistence.createEntityManagerFactory(unit);
+	}
+	
+	protected static void tearDown() {
+		emf.close();
 	}
 
 	public T select(int id) {
