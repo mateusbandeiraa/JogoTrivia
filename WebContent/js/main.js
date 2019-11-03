@@ -94,3 +94,10 @@ $(function () {
         }
     });
 })
+
+function recalcularTimer(partida) {
+    let agora = new Date();
+    let diferenca = new Date(partida.dataInicio - agora);
+    let texto = `Em ${diferenca.getHours()}h, ${diferenca.getMinutes()}m, ${diferenca.getSeconds()}s`;
+    return texto;
+}

@@ -39,8 +39,9 @@ import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class PartidaService {
-	
-	public static final ParExclusoes EXCLUSOES_PARTIDA = new ParExclusoes(Partida.class, "rodadas", "rodadaAtual", "anfitriao");
+
+	public static final ParExclusoes EXCLUSOES_PARTIDA = new ParExclusoes(Partida.class, "rodadas", "rodadaAtual",
+			"anfitriao");
 
 	@Context
 	SecurityContext securityContext;
@@ -57,8 +58,17 @@ public class PartidaService {
 
 	@GET
 	public Response getPartidas(@QueryParam("idPartida") Integer idPartida) {
-		List<Partida> partidas = new PartidaDao().selectAll();
-		return buildResponse(Status.OK, partidas);
+		if (idPartida == null) {
+			List<Partida> partidas = new PartidaDao().selectAll();
+			return buildResponse(Status.OK, partidas);
+		} else {
+			Partida partida = new PartidaDao().select(idPartida);
+			if(partida != null) {
+				return buildResponse(Status.OK, partida);
+			} else {
+				return buildResponse(Status.NOT_FOUND);
+			}
+		}
 	}
 
 	@POST
@@ -99,24 +109,27 @@ public class PartidaService {
 
 		return buildResponse(Status.ACCEPTED);
 	}
-	
+
 	@Path("cadastrarParticipante")
 	@POST
 	@Autenticado
-	public Response cadastrarParticipante(Participante participante, @Context HttpServletRequest request) {
+	public Response cadastrarParticipante(Participante participanteJson, @Context HttpServletRequest request) {
+		Participante participante = new Participante();
 		String ip = request.getRemoteAddr();
 		String headerIp = obterIp(request);
-		
-		if(headerIp != null) {
+
+		if (headerIp != null) {
 			ip = headerIp;
 		}
-		if(ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
+		if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
 			ip = "9.9.9.9";
 		}
+		participante.setNickname(participanteJson.getNickname());
+		participante.setPartida(participanteJson.getPartida());
 		participante.setDataCriacao(new Date());
 		participante.setUsuario(getUsuarioAutenticado());
 		participante.setIp(ip);
-		
+
 		String local;
 		try {
 			local = ServiceUtils.obterLocalizacao(ip);
@@ -124,8 +137,10 @@ public class PartidaService {
 			ex.printStackTrace();
 			local = "Área 42";
 		}
-		
-		return buildResponse(local);
+
+		participante.setLocalizacao(local);
+
+		return buildResponse(participante);
 	}
 
 }

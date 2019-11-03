@@ -7,8 +7,8 @@ hr.vertical {
     width: 1px;
 }
 
-nav {
-    margin-bottom: 16px;
+body>.container{
+	padding: 15px;
 }
 
 .navbar-brand {

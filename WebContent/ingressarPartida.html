@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>JogoTrivia - Ingressar Partida</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="/js/main.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+
+  <link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+  <!--load all styles -->
+  <link rel="stylesheet" type="text/css" media="screen" href="/main.css">
+  <style>
+    .wrapperBotoes>a {
+      float: right;
+    }
+
+    .wrapperBotoes>div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    #containerSpinner{
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    #nomePartida {
+      font-weight: 600;
+      font-size: 20px;
+    }
+
+    .grupoBanners {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .bannerInfo {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 235px;
+    }
+
+    .bannerInfo .texto {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bannerInfo .destaque {
+      font-size: 25pt;
+      line-height: 30pt;
+    }
+
+    .bannerInfo>i {
+      margin-right: 15px;
+    }
+
+    #avisoCusto {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      color: dimgrey;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+
+    #infoPartida {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+
+    #infoPartida>span {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="triviaNav"></nav>
+  <div class="container">
+    <div class="col-sm-8 offset-sm-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
+      <div id="containerSpinner">
+        <i class="fas fa-spinner fa-pulse fa-9x"></i>
+      </div>
+      <div class="card" id="cardIngressar" style="display: none;">
+        <div class="card-header text-center">Ingressar Partida</div>
+        <div class="card-body">
+          <div id="infoPartida">
+            <span class="card-title text-center" id="nomePartida">Conhecimentos Gerais</span>
+            <span class="card-title text-center" id="horaPartida">19:00</span>
+            <span class="card-title text-center" id="countdownPartida">Faltam 19h</span>
+          </div>
+          <div class="grupoBanners">
+            <div class="bannerInfo" id="quantidadeRodadas">
+              <i class="fas fa-question-circle fa-4x"></i>
+              <div class="texto">
+                <span class="destaque">15</span>
+                <span class="complemento">Rodadas</span>
+              </div>
+            </div>
+            <div class="bannerInfo" id="premio">
+              <i class="fas fa-money-bill fa-4x"></i>
+              <div class="texto">
+                <span class="destaque">R$20</span>
+                <span class="complemento">Para o vencedor</span>
+              </div>
+            </div>
+            <div class="bannerInfo" id="quantidadeParticipantes">
+              <i class="fas fa-users fa-4x"></i>
+              <div class="texto">
+                <span class="destaque">54</span>
+                <span class="complemento">Participantes</span>
+              </div>
+            </div>
+          </div>
+          <div id="avisoCusto">
+            <div id="custo"><i class="fas fa-money-bill"></i>R$0,00 para entrar</div>
+            <div id="saldo">Saldo atual: R$13,00</div>
+          </div>
+          <form>
+            <div class="form-group">
+              <input type="text" class="form-control" id="inputNickname" placeholder="Nickname">
+              <small id="ajudaNickname" class="form-text text-muted">Deixe em branco para utilizar o seu nome de
+                usuário.</small>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        let idPartida = getURLParameter("idPartida");
+        if (!idPartida) {
+          window.location.href = "/";
+        }
+        requestService('/rest/partidaService', 'GET', { idPartida: idPartida }, callbackSuccess, callbackFail);
+
+        function callbackSuccess(response) {
+          console.log(response);
+          $("#nomePartida").html(response.nome);
+          let data = new Date(response.dataInicio);
+          $("#horaPartida").html(`${data.getDay()}/${data.getMonth()}/${data.getFullYear()} ${data.getHours()}:${data.getMinutes()}`);
+          $(`#countdownPartida`).html(recalcularTimer(response));
+
+          setInterval(() => {
+            let texto = recalcularTimer(response);
+            $(`#countdownPartida`).html(texto);
+          }, 1000);
+
+          $("#quantidadeRodadas .destaque").html(response.quantidadeRodadas);
+          $("#premio .destaque").html('R$' + response.premio);
+          $("#quantidadeParticipantes .destaque").html(response.quantidadeParticipantes);
+          $("#custo").html(`R$${response.entrada} para entrar`);
+
+          $("#containerSpinner").css('display', 'none');
+          $("#cardIngressar").css('display', 'flex');
+        }
+
+        function callbackFail(response) {
+          console.log(response)
+        }
+      </script>
+
+    </div>
+  </div>
+
+
+</body>
+
+</html>

@@ -27,7 +27,7 @@
             let htmlCardsPartidas = "";
             for (let partida of response) {
                 let cardPartida =
-                    `<div class="card text-white bg-primary col-lg-3 ml-1 mr-1 card-partida" id="card-partida-${partida.id}">
+                    `<a class="linkPartida" href="/ingressarPartida.html?idPartida=${partida.id}"><div class="card text-white bg-primary col-lg-3 ml-1 mr-1 card-partida" id="card-partida-${partida.id}">
                             <div class="card-header">${partida.nome}</div>
                             <div class="card-body">
                                 <ul>
@@ -38,7 +38,7 @@
                                 </ul>
                                 <p class="card-text timer-partida" data-id-partida="${partida.id}">${recalcularTimer(partida)}</p>
                             </div>
-                        </div>`;
+                        </div></a>`;
                 htmlCardsPartidas += cardPartida;
             }
             $("#container-partidas").html(htmlCardsPartidas);
@@ -48,13 +48,6 @@
                     let texto = recalcularTimer(partida);
                     $(`.timer-partida[data-id-partida=${partida.id}]`).html(texto);
                 }, 1000);
-            }
-
-            function recalcularTimer(partida) {
-                let agora = new Date();
-                let diferenca = new Date(partida.dataInicio - agora);
-                let texto = `Em ${diferenca.getHours()}h, ${diferenca.getMinutes()}m, ${diferenca.getSeconds()}s`;
-                return texto;
             }
         }
         function callbackFail(response) {
@@ -66,6 +59,10 @@
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
+        }
+
+        .linkPartida, .linkPartida:hover{
+            text-decoration: none;;
         }
 
         .card-partida {
