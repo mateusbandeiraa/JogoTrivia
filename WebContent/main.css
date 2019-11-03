@@ -48,3 +48,9 @@ ul {
 .segundos {
     width: 50px;
 }
+
+.section-title{
+    overflow: scroll;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
