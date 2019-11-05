@@ -32,12 +32,6 @@
       margin-bottom: 8px;
     }
 
-    #containerSpinner{
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-
     #nomePartida {
       font-weight: 600;
       font-size: 20px;
@@ -89,12 +83,22 @@
       margin-bottom: 0;
     }
   </style>
+  <script>
+    let token = obterToken();
+    if (!token) {
+      let params = {
+        "msg": "Você precisa fazer login para acessar essa página",
+        "returnTo": window.location.href
+      }
+      window.location.href = "/login.html?" + $.param(params);
+    }
+  </script>
 </head>
 
 <body>
   <nav class="triviaNav"></nav>
   <div class="container">
-    <div class="col-sm-8 offset-sm-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
+    <div class="col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-6 offset-lg-3">
       <div id="containerSpinner">
         <i class="fas fa-spinner fa-pulse fa-9x"></i>
       </div>
@@ -133,48 +137,91 @@
             <div id="custo"><i class="fas fa-money-bill"></i>R$0,00 para entrar</div>
             <div id="saldo">Saldo atual: R$13,00</div>
           </div>
-          <form>
+          <form id="formInscricao" action="/rest/partidaService/cadastrarParticipante" method="POST">
             <div class="form-group">
-              <input type="text" class="form-control" id="inputNickname" placeholder="Nickname">
+              <input type="text" class="form-control" id="inputNickname" placeholder="Nickname" name="nickname">
               <small id="ajudaNickname" class="form-text text-muted">Deixe em branco para utilizar o seu nome de
                 usuário.</small>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            <div id="divFeedback"></div>
           </form>
         </div>
       </div>
-
       <script>
         let idPartida = getURLParameter("idPartida");
-        if (!idPartida) {
-          window.location.href = "/";
+        let handleTimer = null;
+
+        function setupPagina() {
+
+          if (!idPartida) {
+            window.location.href = "/";
+          }
+          requestService('/rest/partidaService', 'GET', { idPartida: idPartida }, callbackSuccess, callbackFail);
+
+          function callbackSuccess(response) {
+            console.log(response);
+            $("#nomePartida").html(response.nome);
+            let data = new Date(response.dataInicio);
+            $("#horaPartida").html(`${data.getDate()}/${data.getMonth() + 1}/${data.getFullYear()} ${data.getHours()}:${data.getMinutes()}`);
+            $(`#countdownPartida`).html(recalcularTimer(response));
+
+            if(handleTimer != null){
+              clearInterval(handleTimer);
+            }
+            handleTimer = setInterval(() => {
+              let texto = recalcularTimer(response);
+              $(`#countdownPartida`).html(texto);
+            }, 1000);
+
+            $("#quantidadeRodadas .destaque").html(response.quantidadeRodadas);
+            $("#premio .destaque").html('R$' + response.premio);
+            $("#quantidadeParticipantes .destaque").html(response.quantidadeParticipantes);
+            $("#custo").html(`R$${response.entrada} para entrar`);
+
+            $("#containerSpinner").css('display', 'none');
+            $("#cardIngressar").css('display', 'flex');
+          }
+
+          function callbackFail(response) {
+            console.log(response)
+          }
         }
-        requestService('/rest/partidaService', 'GET', { idPartida: idPartida }, callbackSuccess, callbackFail);
 
-        function callbackSuccess(response) {
-          console.log(response);
-          $("#nomePartida").html(response.nome);
-          let data = new Date(response.dataInicio);
-          $("#horaPartida").html(`${data.getDay()}/${data.getMonth()}/${data.getFullYear()} ${data.getHours()}:${data.getMinutes()}`);
-          $(`#countdownPartida`).html(recalcularTimer(response));
+        setupPagina();
 
-          setInterval(() => {
-            let texto = recalcularTimer(response);
-            $(`#countdownPartida`).html(texto);
-          }, 1000);
+        setInterval(setupPagina, 5000);
 
-          $("#quantidadeRodadas .destaque").html(response.quantidadeRodadas);
-          $("#premio .destaque").html('R$' + response.premio);
-          $("#quantidadeParticipantes .destaque").html(response.quantidadeParticipantes);
-          $("#custo").html(`R$${response.entrada} para entrar`);
+        $("#formInscricao").submit(function (event) {
+          event.preventDefault();
+          let post_url = $(this).attr("action"); //get form action url
+          let request_method = $(this).attr("method"); //get form GET/POST method
+          let form_data = formToJson(this); //Encode form elements for submission
 
-          $("#containerSpinner").css('display', 'none');
-          $("#cardIngressar").css('display', 'flex');
-        }
+          const nickname = form_data.nickname;
 
-        function callbackFail(response) {
-          console.log(response)
-        }
+          const data = {
+            "nickname": nickname,
+            "partida": {
+              "id": idPartida
+            }
+          }
+
+          requestService(post_url, request_method, data, callbackSuccess, callbackFail);
+
+          function callbackSuccess(response) {
+            $("#inputNickname").val(response.nickname).attr("readonly", "true");
+            $("#ajudaNickname").css("display", "none");
+            $("form button[type=submit]").css("display", "none");
+            $("#divFeedback").html("Inscrição realizada! Aguarde o início da partida.").addClass("alert").addClass("alert-success");
+            setupPagina();
+          }
+
+          function callbackFail(response) {
+            $("#divFeedback").html(response.responseText).removeClass().addClass("alert").addClass("alert-danger");
+            setupPagina();
+          }
+        });
       </script>
 
     </div>

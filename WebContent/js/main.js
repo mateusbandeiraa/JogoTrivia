@@ -67,7 +67,11 @@ function salvarToken(token) {
 }
 
 function obterToken() {
-    return JSON.parse(getCookie("userInfo"));
+    let cookie = getCookie("userInfo");
+    if(!cookie){
+        return null;
+    }
+    return JSON.parse(cookie);
 }
 
 function getURLParameter(sParam) {
@@ -97,7 +101,15 @@ $(function () {
 
 function recalcularTimer(partida) {
     let agora = new Date();
-    let diferenca = new Date(partida.dataInicio - agora);
-    let texto = `Em ${diferenca.getHours()}h, ${diferenca.getMinutes()}m, ${diferenca.getSeconds()}s`;
+    let diferenca = partida.dataInicio - agora;
+
+    let segundos = Math.floor(diferenca / 1000);
+    let minutos = Math.floor(segundos / 60);
+    let horas = Math.floor(minutos / 60);
+
+    segundos -= minutos * 60;
+    minutos -= horas * 60;
+
+    let texto = `Em ${horas}h, ${minutos}m, ${segundos}s`;
     return texto;
 }

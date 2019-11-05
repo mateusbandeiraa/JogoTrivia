@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 
 @Entity
@@ -27,6 +29,7 @@ public class Participante {
 	@ManyToOne(optional = false)
 	private Usuario usuario;
 	@ManyToOne(optional = false)
+	@JsonBackReference
 	private Partida partida;
 
 	public Participante() {

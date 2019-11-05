@@ -7,8 +7,8 @@ hr.vertical {
     width: 1px;
 }
 
-body>.container{
-	padding: 15px;
+body>.container {
+    padding: 15px;
 }
 
 .navbar-brand {
@@ -23,6 +23,11 @@ ul {
     list-style-type: none;
 }
 
+#containerSpinner {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
 
 .fa-question-circle::before {
     content: "\f059";

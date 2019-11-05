@@ -18,6 +18,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.xml.bind.annotation.XmlElement;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 
@@ -35,15 +37,19 @@ public class Partida {
 	private Rodada rodadaAtual;
 	@Column(nullable = false)
 	private Date dataInicio;
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "ENUM('AGENDADA', 'DISPONIVEL', 'EM_ANDAMENTO', 'ENCERRADA')")
 	private EstadoPartida estadoAtual;
 	@Column
 	private BigDecimal premio = BigDecimal.ZERO;
 	@Column
 	private BigDecimal entrada = BigDecimal.ZERO;
-	
+
 	@ManyToOne(optional = false)
 	private Usuario anfitriao;
+
+	@OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+	@JsonBackReference
+	private List<Participante> participantes = new ArrayList<>();
 
 	public Partida() {
 		super();
@@ -54,7 +60,7 @@ public class Partida {
 		this.nome = nome;
 		this.dataInicio = dataInicio;
 		this.setAnfitriao(anfitriao);
-		if(this.dataInicio.after(new Date())) {
+		if (this.dataInicio.after(new Date())) {
 			this.estadoAtual = EstadoPartida.ENCERRADA;
 		} else {
 			this.estadoAtual = EstadoPartida.AGENDADA;
@@ -71,15 +77,33 @@ public class Partida {
 	public int quantidadeRodadas() {
 		return this.getRodadas().size();
 	}
-	
+
 	@XmlElement
 	public int quantidadeParticipantes() {
-		return 0; // TODO EDIT
+		return this.getParticipantes().size();
 	}
-	
+
 	public void inserirRodada(Questao questao) {
 		Rodada rodada = new Rodada(questao);
 		this.rodadas.add(rodada);
+	}
+
+	public void inscreverParticipante(Participante participante) throws IllegalStateException, IllegalArgumentException {
+		if (this.estadoAtual != EstadoPartida.DISPONIVEL) {
+			throw new IllegalStateException("A partida não está disponível.");
+		}
+		
+		for(Participante participanteInscrito : this.getParticipantes()) {
+			if(participanteInscrito.getUsuario().equals(participante.getUsuario())) {
+				throw new IllegalArgumentException("Este usuário já está inscrito nesta partida.");
+			}
+			if(participanteInscrito.getNickname().equalsIgnoreCase(participante.getNickname())) {
+				throw new IllegalArgumentException("Já existe um usuário com este nickname nesta partida.");
+			}
+		}
+		
+		participante.setPartida(this);
+		this.getParticipantes().add(participante);
 	}
 
 	public int getId() {
@@ -156,7 +180,13 @@ public class Partida {
 		}
 		this.anfitriao = anfitriao;
 	}
-	
-	
+
+	public List<Participante> getParticipantes() {
+		return participantes;
+	}
+
+	public void setParticipantes(List<Participante> participantes) {
+		this.participantes = participantes;
+	}
 
 }

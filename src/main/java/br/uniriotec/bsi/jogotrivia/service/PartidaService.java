@@ -124,6 +124,7 @@ public class PartidaService {
 		if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
 			ip = "9.9.9.9";
 		}
+		
 		participante.setNickname(participanteJson.getNickname());
 		participante.setPartida(participanteJson.getPartida());
 		participante.setDataCriacao(new Date());
@@ -139,8 +140,22 @@ public class PartidaService {
 		}
 
 		participante.setLocalizacao(local);
-
+		
+		PartidaDao pd = new PartidaDao();
+		
+		Partida partida = pd.select(participanteJson.getPartida().getId());
+		
+		if(partida == null) {
+			buildResponse(Status.BAD_REQUEST, "Partida inválida");
+		}
+		try {
+			partida.inscreverParticipante(participante);
+		} catch (IllegalStateException | IllegalArgumentException ex) {
+			return buildResponse(Status.NOT_ACCEPTABLE, ex.getMessage());
+		}
+		
+		pd.update(partida);
+		
 		return buildResponse(participante);
 	}
-
 }

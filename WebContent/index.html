@@ -27,20 +27,25 @@
             let htmlCardsPartidas = "";
             for (let partida of response) {
                 let cardPartida =
-                    `<a class="linkPartida" href="/ingressarPartida.html?idPartida=${partida.id}"><div class="card text-white bg-primary col-lg-3 ml-1 mr-1 card-partida" id="card-partida-${partida.id}">
-                            <div class="card-header">${partida.nome}</div>
-                            <div class="card-body">
-                                <ul>
-                                    <li>${partida.quantidadeRodadas} rodadas</li>
-                                    <li>${partida.quantidadeParticipantes} Participantes</li>
-                                    <li>Entrada: R$${partida.entrada}</li>
-                                    <li>Prêmio: R$${partida.premio}</li>
-                                </ul>
-                                <p class="card-text timer-partida" data-id-partida="${partida.id}">${recalcularTimer(partida)}</p>
+                    `<div class="col-lg-3 col-sm-5 ml-1 mr-1">
+                        <a class="linkPartida" href="/ingressarPartida.html?idPartida=${partida.id}">
+                            <div class="card text-white bg-primary card-partida" id="card-partida-${partida.id}">
+                                <div class="card-header">${partida.nome}</div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li>${partida.quantidadeRodadas} rodadas</li>
+                                        <li>${partida.quantidadeParticipantes} Participantes</li>
+                                        <li>Entrada: R$${partida.entrada}</li>
+                                        <li>Prêmio: R$${partida.premio}</li>
+                                    </ul>
+                                    <p class="card-text timer-partida" data-id-partida="${partida.id}">${recalcularTimer(partida)}</p>
+                                </div>
                             </div>
-                        </div></a>`;
+                        </a>
+                    </div>`;
                 htmlCardsPartidas += cardPartida;
             }
+            $("#containerSpinner").css('display', 'none');
             $("#container-partidas").html(htmlCardsPartidas);
 
             for (let partida of response) {
@@ -55,14 +60,16 @@
         }
     </script>
     <style>
-        #container-partidas{
+        #container-partidas {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
         }
 
-        .linkPartida, .linkPartida:hover{
-            text-decoration: none;;
+        .linkPartida,
+        .linkPartida:hover {
+            text-decoration: none;
+            ;
         }
 
         .card-partida {
@@ -100,8 +107,11 @@
 
 <body>
     <nav class="triviaNav"></nav>
+    <div id="containerSpinner">
+        <i class="fas fa-spinner fa-pulse fa-9x"></i>
+    </div>
     <div class="container" id="container-partidas">
-        
+
     </div>
 </body>
 
