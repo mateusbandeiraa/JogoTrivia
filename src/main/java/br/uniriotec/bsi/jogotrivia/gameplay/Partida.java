@@ -1,6 +1,7 @@
 package br.uniriotec.bsi.jogotrivia.gameplay;
 
 import java.math.BigDecimal;
+import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,25 +84,44 @@ public class Partida {
 		return this.getParticipantes().size();
 	}
 
+	@XmlElement
+	public int numeroRodadaAtual() {
+		if (this.getEstadoAtual() != EstadoPartida.EM_ANDAMENTO || rodadaAtual == null) {
+			return -1;
+		}
+
+		return this.getRodadas().indexOf(this.getRodadaAtual()) + 1;
+	}
+
+	public void proximaQuestao() {
+		int indiceRodadaAtual = this.getRodadas().indexOf(this.getRodadaAtual());
+
+		if (indiceRodadaAtual + 1 == this.quantidadeRodadas()) {
+			throw new IllegalStateException("A partida não tem mais rodadas.");
+		}
+		this.setRodadaAtual(this.getRodadas().get(indiceRodadaAtual + 1));
+	}
+
 	public void inserirRodada(Questao questao) {
 		Rodada rodada = new Rodada(questao);
 		this.rodadas.add(rodada);
 	}
 
-	public void inscreverParticipante(Participante participante) throws IllegalStateException, IllegalArgumentException {
+	public void inscreverParticipante(Participante participante)
+			throws IllegalStateException, IllegalArgumentException {
 		if (this.estadoAtual != EstadoPartida.DISPONIVEL) {
 			throw new IllegalStateException("A partida não está disponível.");
 		}
-		
-		for(Participante participanteInscrito : this.getParticipantes()) {
-			if(participanteInscrito.getUsuario().equals(participante.getUsuario())) {
+
+		for (Participante participanteInscrito : this.getParticipantes()) {
+			if (participanteInscrito.getUsuario().equals(participante.getUsuario())) {
 				throw new IllegalArgumentException("Este usuário já está inscrito nesta partida.");
 			}
-			if(participanteInscrito.getNickname().equalsIgnoreCase(participante.getNickname())) {
+			if (participanteInscrito.getNickname().equalsIgnoreCase(participante.getNickname())) {
 				throw new IllegalArgumentException("Já existe um usuário com este nickname nesta partida.");
 			}
 		}
-		
+
 		participante.setPartida(this);
 		this.getParticipantes().add(participante);
 	}
@@ -135,6 +155,7 @@ public class Partida {
 	}
 
 	public void setRodadaAtual(Rodada rodadaAtual) {
+		rodadaAtual.setDataInicio(new Date());
 		this.rodadaAtual = rodadaAtual;
 	}
 

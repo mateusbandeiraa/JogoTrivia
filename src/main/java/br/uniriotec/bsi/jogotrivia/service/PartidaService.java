@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.SecurityContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.x.protobuf.Mysqlx.Ok;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
@@ -69,6 +71,20 @@ public class PartidaService {
 				return buildResponse(Status.NOT_FOUND);
 			}
 		}
+	}
+	
+	@Path("avancarQuestao")
+	@POST
+	@Autenticado({Privilegio.ANFITRIAO, Privilegio.MODERADOR})
+	public Response proximaQuestao(Integer idPartida) {
+		PartidaDao pd = new PartidaDao();
+		
+		Partida partida = pd.select(idPartida);
+		partida.proximaQuestao();
+		
+		pd.update(partida);
+		
+		return buildResponse(Status.OK, partida);
 	}
 
 	@POST

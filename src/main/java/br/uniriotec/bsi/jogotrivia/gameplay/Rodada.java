@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlElement;
 
 @Entity
 public class Rodada {
@@ -61,6 +62,19 @@ public class Rodada {
 
 	public void setDataInicio(Date dataInicio) {
 		this.dataInicio = dataInicio;
+	}
+	
+	@XmlElement
+	public int quantidadeRespostas(){
+		return 0; //TODO edit this
+	}
+	
+	@XmlElement
+	public int tempoTotal() {
+		if(this.getQuestao() == null) {
+			return 0;
+		}
+		return this.getTempoExtra() + this.getQuestao().getTempoDisponivel();
 	}
 
 }
