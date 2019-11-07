@@ -1,6 +1,8 @@
 package br.uniriotec.bsi.jogotrivia.administrativo;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,9 +11,11 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
 import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
 import br.uniriotec.bsi.jogotrivia.suporte.Ticket;
 
@@ -43,6 +47,8 @@ public class Usuario {
 	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
 	private Privilegio privilegio = Privilegio.USUARIO;
 
+	private List<Lancamento> lancamentos;
+
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		this(nome, email, dataCadastro, ativo);
 		setHashSenha(hashSenha);
@@ -69,6 +75,17 @@ public class Usuario {
 		Mensagem m = new Mensagem(textoMensagem, this);
 		t.adicionarMensagem(m);
 		return t;
+	}
+	
+	@XmlElement
+	public BigDecimal getSaldo() {
+		BigDecimal saldo = BigDecimal.ZERO;
+		
+		for(Lancamento lancamento : lancamentos) {
+			saldo.add(lancamento.getValorEfetivo());
+		}
+		
+		return saldo.setScale(2);
 	}
 
 	public Usuario() {
@@ -142,6 +159,14 @@ public class Usuario {
 
 	public void setPrivilegio(Privilegio privilegio) {
 		this.privilegio = privilegio;
+	}
+
+	public List<Lancamento> getLancamentos() {
+		return lancamentos;
+	}
+
+	public void setLancamentos(List<Lancamento> lancamentos) {
+		this.lancamentos = lancamentos;
 	}
 
 }
