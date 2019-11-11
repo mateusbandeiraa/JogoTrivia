@@ -139,8 +139,8 @@
           </div>
           <form id="formInscricao" action="/rest/partidaService/cadastrarParticipante" method="POST">
             <div class="form-group">
-              <input type="text" class="form-control" id="inputNickname" placeholder="Nickname" name="nickname">
-              <small id="ajudaNickname" class="form-text text-muted">Deixe em branco para utilizar o seu nome de
+              <input type="text" class="form-control" id="inputHandle" placeholder="Nickname" name="handle">
+              <small id="ajudaHandle" class="form-text text-muted">Deixe em branco para utilizar o seu nome de
                 usuário.</small>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Entrar</button>
@@ -210,8 +210,8 @@
           requestService(post_url, request_method, data, callbackSuccess, callbackFail);
 
           function callbackSuccess(response) {
-            $("#inputNickname").val(response.nickname).attr("readonly", "true");
-            $("#ajudaNickname").css("display", "none");
+            $("#inputHandle").val(response.nickname).attr("readonly", "true");
+            $("#ajudaHandle").css("display", "none");
             $("form button[type=submit]").css("display", "none");
             $("#divFeedback").html("Inscrição realizada! Aguarde o início da partida.").addClass("alert").addClass("alert-success");
             setupPagina();

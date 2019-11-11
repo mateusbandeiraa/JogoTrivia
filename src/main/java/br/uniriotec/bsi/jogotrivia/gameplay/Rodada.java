@@ -10,16 +10,28 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlElement;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+
 @Entity
 public class Rodada {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewAnfitriao.class)
 	private int id;
+	
 	@ManyToOne(optional = false)
+	@JsonView(ViewAnfitriao.class)
 	private Questao questao;
+	
 	@Column(nullable = false)
+	@JsonView(ViewAnfitriao.class)
 	private int tempoExtra; // Em segundos
+	
 	@Column
+	@JsonView(ViewAnfitriao.class)
 	private Date dataInicio;
 	// List<Palpite>
 
@@ -65,11 +77,13 @@ public class Rodada {
 	}
 	
 	@XmlElement
+	@JsonView(ViewPublico.class)
 	public int quantidadeRespostas(){
 		return 0; //TODO edit this
 	}
 	
 	@XmlElement
+	@JsonView(ViewPublico.class)
 	public int tempoTotal() {
 		if(this.getQuestao() == null) {
 			return 0;

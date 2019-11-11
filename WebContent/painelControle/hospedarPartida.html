@@ -68,6 +68,9 @@
 
                 let htmlProximasQuestoes = "";
                 for (let i = response.numeroRodadaAtual; i < response.rodadas.length; i++) {
+                    if (i < 0){
+                        i = 0;
+                    }
                     let rodada = response.rodadas[i];
                     let templateParte1 =
                         `<div class="containerProximaQuestao">
@@ -221,15 +224,9 @@
                             <div class="form-inline mb-3">
                                 <span id="questaoAtual">Questão atual</span>
                                 <div id="containerQuestaoAtual" style="width: 100%;">
-                                    <span class="textoPergunta"> Quantos cocos uma
-                                        andorinha
-                                        carrega?</span>
+                                    <span class="textoPergunta"> PARTIDA AINDA NÃO INICIADA</span>
                                     <div class="col-11 pl-0">
                                         <ul class="listaOpcoes">
-                                            <li>1</li>
-                                            <li>0</li>
-                                            <li>Europeias ou americanas?</li>
-                                            <li>Guarapari Búzios</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -238,20 +235,20 @@
                                     <div class="bannerInfo">
                                         <div class="principal">
                                             <i class="far fa-check-circle fa-2x"></i>
-                                            <span id="quantidadeRespostas" class="informacao">4</span>
+                                            <span id="quantidadeRespostas" class="informacao">0</span>
                                             <span class="informacao">respostas</span>
                                         </div>
                                         <small class="text-muted informacaoSecundario"> Faltam <span
-                                                id="faltamRespostas">10</span>
+                                                id="faltamRespostas">0</span>
                                         </small>
                                     </div>
                                     <div class="bannerInfo">
                                         <div class="principal">
                                             <i class="far fa-clock fa-2x"></i>
-                                            <span class="informacao"><span id="tempoRestanteQuestao">4,65</span>s</span>
+                                            <span class="informacao"><span id="tempoRestanteQuestao">0</span>s</span>
                                         </div>
                                         <small class="text-muted informacaoSecundario">Limite de
-                                            <span id="tempoQuestao">10</span>s
+                                            <span id="tempoQuestao">0</span>s
                                         </small>
                                     </div>
                                 </div>

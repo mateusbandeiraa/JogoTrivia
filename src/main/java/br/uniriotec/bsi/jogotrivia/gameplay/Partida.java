@@ -1,14 +1,17 @@
 package br.uniriotec.bsi.jogotrivia.gameplay;
 
 import java.math.BigDecimal;
-import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,37 +23,58 @@ import javax.persistence.OrderColumn;
 import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.service.Views;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 
 @Entity
 public class Partida {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(Views.ViewPublico.class)
 	private int id;
+
 	@Column(nullable = false)
+	@JsonView(Views.ViewPublico.class)
 	private String nome;
+
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderColumn
+	@JsonView(ViewAnfitriao.class)
 	private List<Rodada> rodadas = new ArrayList<Rodada>();
+
 	@OneToOne
+	@JsonView(ViewAnfitriao.class)
 	private Rodada rodadaAtual;
+
 	@Column(nullable = false)
+	@JsonView(Views.ViewPublico.class)
 	private Date dataInicio;
-	@Column(nullable = false, columnDefinition = "ENUM('AGENDADA', 'DISPONIVEL', 'EM_ANDAMENTO', 'ENCERRADA')")
-	private EstadoPartida estadoAtual;
+
+	@Column(nullable = false, columnDefinition = "ENUM('AGENDADA', 'DISPONIVEL', 'EM_ANDAMENTO', 'ENCERRADA') DEFAULT 'DISPONIVEL'")
+	@Enumerated(EnumType.STRING)
+	@JsonView(Views.ViewPublico.class)
+	private EstadoPartida estadoAtual = EstadoPartida.DISPONIVEL;
+
 	@Column
+	@JsonView(Views.ViewPublico.class)
 	private BigDecimal premio = BigDecimal.ZERO;
+
 	@Column
+	@JsonView(Views.ViewPublico.class)
 	private BigDecimal entrada = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
+	@JsonView(Views.ViewPublico.class)
 	private Usuario anfitriao;
 
 	@OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+	@JsonView(Views.ViewPublico.class)
 	@JsonBackReference
-	private List<Participante> participantes = new ArrayList<>();
+	private Set<Participante> participantes = new HashSet<>();
 
 	public Partida() {
 		super();
@@ -61,11 +85,6 @@ public class Partida {
 		this.nome = nome;
 		this.dataInicio = dataInicio;
 		this.setAnfitriao(anfitriao);
-		if (this.dataInicio.after(new Date())) {
-			this.estadoAtual = EstadoPartida.ENCERRADA;
-		} else {
-			this.estadoAtual = EstadoPartida.AGENDADA;
-		}
 	}
 
 	public Partida(String nome, Date dataInicio, Usuario anfitriao, BigDecimal premio, BigDecimal entrada) {
@@ -75,16 +94,19 @@ public class Partida {
 	}
 
 	@XmlElement
+	@JsonView(Views.ViewPublico.class)
 	public int quantidadeRodadas() {
 		return this.getRodadas().size();
 	}
 
 	@XmlElement
+	@JsonView(Views.ViewPublico.class)
 	public int quantidadeParticipantes() {
 		return this.getParticipantes().size();
 	}
 
 	@XmlElement
+	@JsonView(Views.ViewPublico.class)
 	public int numeroRodadaAtual() {
 		if (this.getEstadoAtual() != EstadoPartida.EM_ANDAMENTO || rodadaAtual == null) {
 			return -1;
@@ -94,6 +116,9 @@ public class Partida {
 	}
 
 	public void proximaQuestao() {
+		if(this.getEstadoAtual() == EstadoPartida.DISPONIVEL) {
+			this.setEstadoAtual(EstadoPartida.EM_ANDAMENTO);
+		}
 		int indiceRodadaAtual = this.getRodadas().indexOf(this.getRodadaAtual());
 
 		if (indiceRodadaAtual + 1 == this.quantidadeRodadas()) {
@@ -202,11 +227,11 @@ public class Partida {
 		this.anfitriao = anfitriao;
 	}
 
-	public List<Participante> getParticipantes() {
+	public Set<Participante> getParticipantes() {
 		return participantes;
 	}
 
-	public void setParticipantes(List<Participante> participantes) {
+	public void setParticipantes(Set<Participante> participantes) {
 		this.participantes = participantes;
 	}
 

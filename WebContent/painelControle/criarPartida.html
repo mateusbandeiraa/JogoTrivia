@@ -169,6 +169,7 @@
 
                     function callbackSuccess(response) {
                         $("#divFeedback").html("Alterações salvas").removeClass().addClass("alert").addClass("alert-success");
+                        window.location.href = 'hospedarPartida.html?idPartida=' + response.id;
                         atualizarTabela();
                     }
 

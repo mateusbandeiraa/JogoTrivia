@@ -71,7 +71,7 @@ function obterToken() {
     if(!cookie){
         return null;
     }
-    return JSON.parse(cookie);
+    return cookie;
 }
 
 function getURLParameter(sParam) {

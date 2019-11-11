@@ -25,6 +25,7 @@ import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.gameplay.Opcao;
 import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
 import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 
 @Path("/questaoService")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -154,7 +155,7 @@ public class QuestaoService {
 			} else {
 				questoes = qd.selectAll();
 			}
-			return buildResponse(Status.OK, questoes);
+			return buildResponse(Status.OK, questoes, ViewAnfitriao.class);
 		}
 	}
 }

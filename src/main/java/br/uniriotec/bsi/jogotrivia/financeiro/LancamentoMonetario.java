@@ -6,23 +6,38 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
-public class LancamentoMonetario extends Lancamento {
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+
+@Entity
+public class LancamentoMonetario extends Lancamento {
+	@JsonView(ViewAutenticado.class)
 	private String codigoAutorizacao;
+	@JsonView(ViewAutenticado.class)
 	private String checkoutCode;
+	@JsonView(ViewAutenticado.class)
 	private boolean estaPago;
 
-	public LancamentoMonetario(BigDecimal valor, DirecaoLancamento direcao, Date data) {
-		super(valor, direcao, data);
+	public LancamentoMonetario() {
+		super();
 	}
 
-	public LancamentoMonetario(BigDecimal valor, DirecaoLancamento direcao) {
-		super(valor, direcao);
+	public LancamentoMonetario(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario, Date data) {
+		super(valor, direcao, usuario, data);
+	}
+
+	public LancamentoMonetario(BigDecimal valor, Usuario usuario, DirecaoLancamento direcao) {
+		super(valor, direcao, usuario);
 	}
 
 	public String solicitarAutorizacao() {
@@ -80,8 +95,12 @@ public class LancamentoMonetario extends Lancamento {
 
 			con.disconnect();
 
-			checkoutCode = doc.getElementsByTagName("code").item(0).getTextContent();
-			estaPago = doc.getElementsByTagName("status").item(0).getTextContent().equals("3");
+			try {
+				checkoutCode = doc.getElementsByTagName("code").item(0).getTextContent();
+				estaPago = doc.getElementsByTagName("status").item(0).getTextContent().equals("3");
+			} catch (NullPointerException ex) {
+				// nada
+			}
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -89,16 +108,19 @@ public class LancamentoMonetario extends Lancamento {
 
 		return estaPago;
 	}
-	
+
+	@XmlElement
+	@JsonView(ViewAutenticado.class)
+	@JsonProperty("urlCheckout")
 	public String getUrlCheckout() {
 		return "https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=" + this.codigoAutorizacao;
 	}
-
-	public static void main(String[] args) {
-		LancamentoMonetario lm = new LancamentoMonetario(BigDecimal.TEN, DirecaoLancamento.ENTRADA);
-		
-		lm.setCodigoAutorizacao("36705ACF743646DC945ED72C3FC71973");
-		System.out.println(lm.verificarPagamento());
+	
+	public BigDecimal getValorEfetivo() {
+		if(!estaPago) {
+			return BigDecimal.ZERO;
+		}
+		return this.getDirecao().equals(DirecaoLancamento.ENTRADA) ? this.getValor() : this.getValor().negate();
 	}
 
 	public String getCodigoAutorizacao() {

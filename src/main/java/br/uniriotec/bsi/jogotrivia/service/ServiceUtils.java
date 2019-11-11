@@ -15,6 +15,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monitorjbl.json.JsonView;
 import com.monitorjbl.json.JsonViewModule;
@@ -65,6 +66,23 @@ public abstract class ServiceUtils {
 		return resposta;
 	}
 
+	public static Response buildResponse(Status status, Object entity, Class<?> view) {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+		Response resposta;
+
+		try {
+			String json = mapper.writerWithView(view).writeValueAsString(entity);
+
+			resposta = Response.status(status).entity(json).build();
+		} catch (JsonProcessingException ex) {
+			resposta = Response.status(Status.INTERNAL_SERVER_ERROR).build();
+			ex.printStackTrace();
+		}
+
+		return resposta;
+	}
+
 	protected static class ParExclusoes {
 		public final Class<?> classe;
 		public final String[] exclusoes;
@@ -102,7 +120,7 @@ public abstract class ServiceUtils {
 
 	public static String obterIp(HttpServletRequest request) {
 		String ip = request.getHeader("x-forwarded-for");
-		
+
 		return ip;
 	}
 }

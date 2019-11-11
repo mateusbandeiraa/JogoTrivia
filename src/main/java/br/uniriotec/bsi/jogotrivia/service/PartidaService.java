@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -25,7 +24,6 @@ import javax.ws.rs.core.SecurityContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.cj.x.protobuf.Mysqlx.Ok;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
@@ -36,6 +34,9 @@ import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
 import br.uniriotec.bsi.jogotrivia.persistence.PartidaDao;
 import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
 import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 
 @Path("/partidaService")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -59,31 +60,37 @@ public class PartidaService {
 	}
 
 	@GET
+	@Autenticado
 	public Response getPartidas(@QueryParam("idPartida") Integer idPartida) {
 		if (idPartida == null) {
-			List<Partida> partidas = new PartidaDao().selectAll();
-			return buildResponse(Status.OK, partidas);
+			List<Partida> partidas = new PartidaDao().selectDisponiveis();
+			return buildResponse(Status.OK, partidas, ViewPublico.class);
 		} else {
 			Partida partida = new PartidaDao().select(idPartida);
-			if(partida != null) {
-				return buildResponse(Status.OK, partida);
+			if (partida != null) {
+				Class<?> view = ViewPublico.class;
+				if (getUsuarioAutenticado().getPrivilegio().equals(Privilegio.ANFITRIAO)
+						|| getUsuarioAutenticado().getPrivilegio().equals(Privilegio.MODERADOR)) {
+					view = ViewAnfitriao.class;
+				}
+				return buildResponse(Status.OK, partida, view);
 			} else {
 				return buildResponse(Status.NOT_FOUND);
 			}
 		}
 	}
-	
+
 	@Path("avancarQuestao")
 	@POST
-	@Autenticado({Privilegio.ANFITRIAO, Privilegio.MODERADOR})
+	@Autenticado({ Privilegio.ANFITRIAO, Privilegio.MODERADOR })
 	public Response proximaQuestao(Integer idPartida) {
 		PartidaDao pd = new PartidaDao();
-		
+
 		Partida partida = pd.select(idPartida);
 		partida.proximaQuestao();
-		
+
 		pd.update(partida);
-		
+
 		return buildResponse(Status.OK, partida);
 	}
 
@@ -123,7 +130,7 @@ public class PartidaService {
 
 		new PartidaDao().insert(p);
 
-		return buildResponse(Status.ACCEPTED);
+		return buildResponse(Status.ACCEPTED, p, ViewAnfitriao.class);
 	}
 
 	@Path("cadastrarParticipante")
@@ -140,8 +147,8 @@ public class PartidaService {
 		if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
 			ip = "9.9.9.9";
 		}
-		
-		participante.setNickname(participanteJson.getNickname());
+
+		participante.setHandle(participanteJson.getHandle());
 		participante.setPartida(participanteJson.getPartida());
 		participante.setDataCriacao(new Date());
 		participante.setUsuario(getUsuarioAutenticado());
@@ -156,12 +163,12 @@ public class PartidaService {
 		}
 
 		participante.setLocalizacao(local);
-		
+
 		PartidaDao pd = new PartidaDao();
-		
+
 		Partida partida = pd.select(participanteJson.getPartida().getId());
-		
-		if(partida == null) {
+
+		if (partida == null) {
 			buildResponse(Status.BAD_REQUEST, "Partida inválida");
 		}
 		try {
@@ -169,9 +176,11 @@ public class PartidaService {
 		} catch (IllegalStateException | IllegalArgumentException ex) {
 			return buildResponse(Status.NOT_ACCEPTABLE, ex.getMessage());
 		}
-		
+
 		pd.update(partida);
-		
-		return buildResponse(participante);
+
+		participante.getUsuario().getSaldo(); // TODO BACALHAU
+
+		return buildResponse(Status.ACCEPTED, participante, ViewAutenticado.class);
 	}
 }

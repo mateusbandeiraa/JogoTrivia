@@ -10,31 +10,48 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonView;
+
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 
 @Entity
 public abstract class Lancamento {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewAutenticado.class)
 	private int id;
+
+	@JsonView(ViewAutenticado.class)
 	private BigDecimal valor = BigDecimal.ZERO;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, columnDefinition = "ENUM('ENTRADA', 'SAIDA')")
+	@JsonView(ViewAutenticado.class)
 	private DirecaoLancamento direcao = DirecaoLancamento.ENTRADA;
+
+	@JsonView(ViewAutenticado.class)
 	private Date data;
+
+	@ManyToOne(optional = false)
+	private Usuario usuario;
 
 	public Lancamento() {
 		super();
 	}
 
-	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, Date data) {
+	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario, Date data) {
 		this();
 		this.valor = valor;
 		this.direcao = direcao;
+		this.usuario = usuario;
 		this.data = data;
 	}
 
-	public Lancamento(BigDecimal valor, DirecaoLancamento direcao) {
-		this(valor, direcao, new Date());
+	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario) {
+		this(valor, direcao, usuario, new Date());
 	}
 
 	public BigDecimal getValorEfetivo() {
@@ -71,6 +88,14 @@ public abstract class Lancamento {
 
 	public void setData(Date data) {
 		this.data = data;
+	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
 	}
 
 }

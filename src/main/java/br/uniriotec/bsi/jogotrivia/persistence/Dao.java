@@ -21,9 +21,10 @@ public class Dao<T> {
 		String unit = "br.uniriotec.bsi.jogotrivia";
 		emf = Persistence.createEntityManagerFactory(unit);
 	}
-	
+
 	protected static void tearDown() {
-		emf.close();
+		if (emf != null && emf.isOpen())
+			emf.close();
 	}
 
 	public T select(int id) {

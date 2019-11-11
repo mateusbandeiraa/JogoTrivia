@@ -11,11 +11,18 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.hibernate.collection.internal.PersistentBag;
 import org.mindrot.jbcrypt.BCrypt;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
+import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
 import br.uniriotec.bsi.jogotrivia.suporte.Ticket;
 
@@ -32,21 +39,31 @@ public class Usuario {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewPublico.class)
 	private int id;
+
 	@Column(nullable = false)
+	@JsonView(ViewPublico.class)
 	private String nome;
+
 	@Column(nullable = false)
 	private String hashSenha;
+
 	@Column(unique = true, nullable = false)
 	private String email;
+
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	private Date dataCadastro;
-	@Column(nullable = false, columnDefinition = "boolean default true")
+
+	@Column(nullable = false, columnDefinition = " Jboolean default true")
 	private boolean ativo;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
+	@JsonView(ViewPublico.class)
 	private Privilegio privilegio = Privilegio.USUARIO;
 
+	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
@@ -76,15 +93,16 @@ public class Usuario {
 		t.adicionarMensagem(m);
 		return t;
 	}
-	
+
 	@XmlElement
+	@JsonView(ViewAutenticado.class)
 	public BigDecimal getSaldo() {
 		BigDecimal saldo = BigDecimal.ZERO;
-		
-		for(Lancamento lancamento : lancamentos) {
-			saldo.add(lancamento.getValorEfetivo());
+
+		for (Lancamento lancamento : this.getLancamentos()) {
+			saldo = saldo.add(lancamento.getValorEfetivo());
 		}
-		
+
 		return saldo.setScale(2);
 	}
 
@@ -162,6 +180,9 @@ public class Usuario {
 	}
 
 	public List<Lancamento> getLancamentos() {
+		if(lancamentos == null || lancamentos instanceof PersistentBag) {
+			this.setLancamentos(new UsuarioDao().selectLancamentos(this).getLancamentos());
+		}
 		return lancamentos;
 	}
 

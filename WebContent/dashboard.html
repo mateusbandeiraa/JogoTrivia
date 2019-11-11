@@ -32,21 +32,24 @@
             justify-content: space-between;
             margin-bottom: 8px;
         }
+
+        .container {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <nav class="triviaNav"></nav>
-    <div class="container">
+    <div id="containerSpinner">
+        <i class="fas fa-spinner fa-pulse fa-9x"></i>
+    </div>
+    <div class="container" id="containerDashboard">
         <div class="card col-sm-8 offset-sm-2 col-lg-6 offset-lg-3" id="cardLogin">
             <div class="card-body text-center">
                 <h2 class="card-title">Dashboard</h2>
-                <h1 class="card-title">Gandalf TehGrey <span class="flag-icon flag-icon-au"></span></h1>
-
-                <h6 class="mb-0">19:50</h6>
-                <br>
-                <h6 class="mb-3">Faltam 2:21 h</h6>
-
+                <h1 class="card-title" id="nomeUsuario">Gandalf TehGrey <span class="flag-icon flag-icon-au"></span>
+                </h1>
 
                 <div class="text-center">
                     <div class="form-group mt-2">
@@ -56,7 +59,7 @@
 
                     <div class="form-group mt-2">
                         <i class="fas fa-money-bill fa-3x mt-3"></i>
-                        <span style="font-size: 20px;">R$13 Saldo</span>
+                        <span style="font-size: 20px;">Saldo: R$<span id="saldo"></span></span>
                     </div>
 
                 </div>
@@ -64,10 +67,10 @@
                 <form id="" action="" method="POST">
                     <div class="btn-group">
                         <div>
-                            <button type="submit" class="btn btn-success mt-3 mr-2">Depositar</button>
+                            <button type="button" class="btn btn-success mt-3 mr-2" id="btnDepositar">Depositar</button>
                         </div>
                         <div>
-                            <button type="submit" class="btn btn-info mt-3 ml-2">Sacar</button>
+                            <button type="button" class="btn btn-info mt-3 ml-2">Sacar</button>
                         </div>
                     </div>
                 </form>
@@ -91,14 +94,40 @@
 
                 </div>
 
-                <form id="" action="" method="POST">                    
-                        <div>
-                            <button type="submit" class="btn btn-secondary mt-3">Obter mais ajudas</button>
-                        </div>
-
+                <form id="" action="" method="POST">
+                    <div>
+                        <button type="submit" class="btn btn-secondary mt-3">Obter mais ajudas</button>
+                    </div>
+                </form>
 
             </div>
         </div>
+
+        <script>
+            requestService('/rest/financeiroService/atualizarLancamentos', 'GET', null, atualizarDados, atualizarDados);
+            function atualizarDados() {
+                let idUsuario = obterToken().usuario.id;
+                requestService('/rest/usuarioService', 'GET', { id: idUsuario }, callbackSuccess, callbackFail);
+                function callbackSuccess(response) {
+
+                    $("#nomeUsuario").html(response.nome);
+                    $("#saldo").html(response.saldo.toFixed(2));
+
+                    $("#containerSpinner").css('display', 'none');
+                    $("#containerDashboard").css('display', 'block');
+
+
+                }
+                function callbackFail(response) {
+                    console.log(response);
+                }
+
+
+                $("#btnDepositar").click(() => {
+                    window.location.href = "depositar.html";
+                });
+            }
+        </script>
 
     </div>
 </body>

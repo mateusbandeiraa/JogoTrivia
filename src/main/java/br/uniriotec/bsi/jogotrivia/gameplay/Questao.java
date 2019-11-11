@@ -13,21 +13,32 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 
 @Entity
 public class Questao {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewAnfitriao.class)
 	private int id;
+	
+	@JsonView(ViewAnfitriao.class)
 	private String textoPergunta;
+	
+	@JsonView(ViewAnfitriao.class)
 	private int tempoDisponivel; // em segundos
+	
 	@ManyToOne(optional = false)
+	@JsonView(ViewAnfitriao.class)
 	private Usuario autor;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	// @JoinTable()
 	@OrderColumn
+	@JsonView(ViewPublico.class)
 	private List<Opcao> opcoes;
 
 	public Questao() {

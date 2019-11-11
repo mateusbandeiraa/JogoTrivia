@@ -12,6 +12,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+
 @Entity
 public class TokenAutenticacao {
 	@Id
@@ -19,12 +23,19 @@ public class TokenAutenticacao {
 	private int id;
 	@OneToOne
 	@JoinColumn
+	@JsonView(ViewAutenticado.class)
 	private Usuario usuario;
+	
 	@Column(nullable = false)
+	@JsonView(ViewAutenticado.class)
 	private String token;
+	
 	@Column(nullable = false)
+	@JsonView(ViewAutenticado.class)
 	private Date dataCriacao;
+	
 	@Column(nullable = false)
+	@JsonView(ViewAutenticado.class)
 	private Date dataExpiracao;
 
 	private static final int MS_EM_24_HORAS = 1000 * 60 * 60 * 24;

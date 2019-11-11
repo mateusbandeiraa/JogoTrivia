@@ -24,6 +24,8 @@ import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 
 @Path("/usuarioService")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -114,7 +116,7 @@ public class UsuarioService {
 
 		tad.insert(tokenNovo);
 
-		return buildResponse(Status.ACCEPTED, tokenNovo, EXCLUSOES_TOKEN_AUTENTICACAO, EXCLUSOES_USUARIO);
+		return buildResponse(Status.ACCEPTED, tokenNovo, ViewAutenticado.class);
 	}
 
 	@GET
@@ -124,14 +126,15 @@ public class UsuarioService {
 		Response response;
 		if (idUsuario != null) {
 			Usuario usuario = ud.select(Integer.valueOf(idUsuario));
+			ud.selectLancamentos(usuario);
 			if (usuario != null) {
-				response = buildResponse(Status.OK, usuario, EXCLUSOES_USUARIO);
+				response = buildResponse(Status.OK, usuario, ViewAutenticado.class);
 			} else {
 				response = buildResponse(Status.NOT_FOUND, "Usuário não encontrado");
 			}
 		} else {
 			List<Usuario> usuarios = ud.selectAll();
-			response = buildResponse(Status.OK, usuarios, EXCLUSOES_USUARIO, EXCLUSOES_TOKEN_AUTENTICACAO);
+			response = buildResponse(Status.OK, usuarios, ViewPublico.class);
 		}
 		return response;
 	}

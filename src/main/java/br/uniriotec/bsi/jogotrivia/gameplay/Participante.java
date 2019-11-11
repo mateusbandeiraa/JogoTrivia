@@ -10,24 +10,38 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 
 @Entity
 public class Participante {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewAutenticado.class)
 	private int id;
-	@Column(nullable = false)
-	private String nickname;
+	
+	@Column(nullable = true)
+	@JsonView(ViewAutenticado.class)
+	private String handle;
+	
 	@Column(nullable = false)
 	private Date dataCriacao;
+	
 	@Column(nullable = false)
 	private String ip;
+	
 	@Column
+	@JsonView(ViewAutenticado.class)
 	private String localizacao;
+	
 	@ManyToOne(optional = false)
+	@JsonView(ViewAutenticado.class)
 	private Usuario usuario;
+	
 	@ManyToOne(optional = false)
 	@JsonBackReference
 	private Partida partida;
@@ -36,15 +50,24 @@ public class Participante {
 		super();
 	}
 
-	public Participante(String nickname, Date dataCriacao, String ip, String localizacao, Usuario usuario,
+	public Participante(String handle, Date dataCriacao, String ip, String localizacao, Usuario usuario,
 			Partida partida) {
 		this();
-		this.nickname = nickname;
+		this.handle = handle;
 		this.dataCriacao = dataCriacao;
 		this.ip = ip;
 		this.localizacao = localizacao;
 		this.usuario = usuario;
 		this.partida = partida;
+	}
+
+	@JsonView(ViewPublico.class)
+	@JsonProperty("nickname")
+	public String getNickname() {
+		if (this.getHandle() != null) {
+			return this.getHandle();
+		}
+		return this.getUsuario().getNome();
 	}
 
 	public int getId() {
@@ -55,12 +78,12 @@ public class Participante {
 		this.id = id;
 	}
 
-	public String getNickname() {
-		return nickname;
+	public String getHandle() {
+		return handle;
 	}
 
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
+	public void setHandle(String handle) {
+		this.handle = handle;
 	}
 
 	public Date getDataCriacao() {

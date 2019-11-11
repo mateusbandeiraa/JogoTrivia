@@ -6,20 +6,28 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+
 @Entity
 public class Opcao {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(ViewPublico.class)
 	private int id;
 	@Column(nullable = false)
+	@JsonView(ViewPublico.class)
 	private String texto;
 	// O columnDefinition = "BOOLEAN" é necessário para que o JPA mapeie o campo
 	// para TinyInt(1). Caso contrário, o campo seria mapeado para bit, o que causa
 	// problemas para visualizar os dados no terminal.
 	// stackoverflow.com/a/14249348
 	@Column(nullable = false, columnDefinition = "BOOLEAN")
+	@JsonView(ViewPublico.class)
 	private boolean removivel;
 	@Column(nullable = false, columnDefinition = "BOOLEAN")
+	@JsonView(ViewPublico.class)
 	private boolean correta;
 
 	public Opcao() {
