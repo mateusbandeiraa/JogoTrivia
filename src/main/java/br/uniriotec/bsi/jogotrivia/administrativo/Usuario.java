@@ -66,6 +66,18 @@ public class Usuario {
 	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
 
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@JsonView(ViewAutenticado.class)
+	private int quantidadeAjudasBomba;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@JsonView(ViewAutenticado.class)
+	private int quantidadeAjudasPopular;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@JsonView(ViewAutenticado.class)
+	private int quantidadeAjudasBonus;
+
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		this(nome, email, dataCadastro, ativo);
 		setHashSenha(hashSenha);
@@ -180,7 +192,7 @@ public class Usuario {
 	}
 
 	public List<Lancamento> getLancamentos() {
-		if(lancamentos == null || lancamentos instanceof PersistentBag) {
+		if (lancamentos == null || lancamentos instanceof PersistentBag) {
 			this.setLancamentos(new UsuarioDao().selectLancamentos(this).getLancamentos());
 		}
 		return lancamentos;
@@ -188,6 +200,42 @@ public class Usuario {
 
 	public void setLancamentos(List<Lancamento> lancamentos) {
 		this.lancamentos = lancamentos;
+	}
+
+	public int getQuantidadeAjudasBomba() {
+		return quantidadeAjudasBomba;
+	}
+
+	public void setQuantidadeAjudasBomba(int quantidadeAjudasBomba) {
+		this.quantidadeAjudasBomba = quantidadeAjudasBomba;
+	}
+
+	public void incrementarQuantidadeAjudasBomba(int incremento) {
+		this.setQuantidadeAjudasBomba(this.quantidadeAjudasBomba + incremento);
+	}
+
+	public int getQuantidadeAjudasPopular() {
+		return quantidadeAjudasPopular;
+	}
+
+	public void setQuantidadeAjudasPopular(int quantidadeAjudasPopular) {
+		this.quantidadeAjudasPopular = quantidadeAjudasPopular;
+	}
+
+	public void incrementarQuantidadeAjudasPopular(int incremento) {
+		this.setQuantidadeAjudasPopular(this.quantidadeAjudasPopular + incremento);
+	}
+
+	public int getQuantidadeAjudasBonus() {
+		return quantidadeAjudasBonus;
+	}
+
+	public void setQuantidadeAjudasBonus(int quantidadeAjudasBonus) {
+		this.quantidadeAjudasBonus = quantidadeAjudasBonus;
+	}
+
+	public void incrementarQuantidadeAjudasBonus(int incremento) {
+		this.setQuantidadeAjudasBonus(this.quantidadeAjudasBonus + incremento);
 	}
 
 }

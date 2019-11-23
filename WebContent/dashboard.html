@@ -79,26 +79,37 @@
                 <div class="text-center">
                     <div class="form-group">
                         <i class="fas fa-bomb"></i>
-                        <span>5</span>
+                        <span id="quantidadeAjudasBomba">5</span>
                     </div>
 
                     <div class="form-group">
                         <i class="fas fa-rocket"></i>
-                        <span>7</span>
+                        <span id="quantidadeAjudasBonus">7</span>
                     </div>
 
                     <div class="form-group">
                         <i class="fas fa-users"></i>
-                        <span>2</span>
+                        <span id="quantidadeAjudasPopular">2</span>
                     </div>
 
                 </div>
 
-                <form id="" action="" method="POST">
-                    <div>
-                        <button type="submit" class="btn btn-secondary mt-3">Obter mais ajudas</button>
-                    </div>
-                </form>
+                <div>
+                    <button type="button" class="btn btn-secondary mt-3" id="btnMaisAjudas">Obter mais ajudas</button>
+                </div>
+
+                <script>
+                $("#btnMaisAjudas").click(function() {
+                    let idUsuario = obterToken().usuario.id;
+                    requestService('/rest/usuarioService/obterMaisAjudas', 'POST', {idUsuario: idUsuario}, callback, callback);
+
+                    function callback(response){
+                        if(response){
+                            window.open(response.responseText, "_blank");
+                        }
+                    }
+                });
+                </script>
 
             </div>
         </div>
@@ -112,6 +123,10 @@
 
                     $("#nomeUsuario").html(response.nome);
                     $("#saldo").html(response.saldo.toFixed(2));
+
+                    $("#quantidadeAjudasBomba").html(response.quantidadeAjudasBomba);
+                    $("#quantidadeAjudasBonus").html(response.quantidadeAjudasBonus);
+                    $("#quantidadeAjudasPopular").html(response.quantidadeAjudasPopular);
 
                     $("#containerSpinner").css('display', 'none');
                     $("#containerDashboard").css('display', 'block');

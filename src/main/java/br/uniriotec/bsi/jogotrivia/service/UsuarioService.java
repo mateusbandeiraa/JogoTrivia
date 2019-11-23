@@ -1,7 +1,9 @@
 package br.uniriotec.bsi.jogotrivia.service;
 
 import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.buildResponse;
+import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.obterUsuarioPorSecurityContext;
 
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
@@ -34,6 +36,9 @@ public class UsuarioService {
 
 	public static final ParExclusoes EXCLUSOES_USUARIO = new ParExclusoes(Usuario.class, "hashSenha");
 	public static final ParExclusoes EXCLUSOES_TOKEN_AUTENTICACAO = new ParExclusoes(TokenAutenticacao.class, "id");
+
+	@Context
+	SecurityContext securityContext;
 
 	@POST
 	public Response cadastrar(Usuario usuarioJson) {
@@ -143,5 +148,36 @@ public class UsuarioService {
 	@Path("/privilegios")
 	public Response getPrivilegios() {
 		return buildResponse(Status.OK, Privilegio.values());
+	}
+
+	@POST
+	@Path("/obterMaisAjudas")
+	@Autenticado
+	public Response obterMaisAjudas() {
+		Usuario usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
+		SecureRandom random = new SecureRandom();
+		Integer numeroAleatorio = random.nextInt(3);
+		Integer quantidadeAleatoria = random.nextInt(3) + 1;
+		
+		switch (numeroAleatorio) {
+		case 0:
+			usuarioAutenticado.incrementarQuantidadeAjudasBomba(quantidadeAleatoria);
+			break;
+		case 1:
+			usuarioAutenticado.incrementarQuantidadeAjudasBonus(quantidadeAleatoria);
+			break;
+		case 2:
+			usuarioAutenticado.incrementarQuantidadeAjudasPopular(quantidadeAleatoria);
+			break;
+		default:
+			break;
+		}
+		
+		new UsuarioDao().update(usuarioAutenticado);
+		
+		String urlCompartilhar = "https://twitter.com/intent/tweet?text=Estou%20jogando%20JogoTrivia!";
+		
+		return buildResponse(Status.OK, urlCompartilhar);
+		
 	}
 }
