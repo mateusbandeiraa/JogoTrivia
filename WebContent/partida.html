@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>JogoTrivia - Partida em andamento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="/js/main.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <link href="/fontawesome-free-5.10.2-web/css/all.css" rel="stylesheet">
+    <!--load all styles -->
+    <link rel="stylesheet" type="text/css" media="screen" href="/main.css">
+    <style>
+        #nomePartida {
+            font-size: 20pt;
+            font-weight: 500;
+        }
+
+        #containerPergunta {
+            font-size: 18pt;
+        }
+
+        #opcoes {
+            margin-top: 15px;
+        }
+
+        #opcoes .btn {
+            text-align: left;
+        }
+
+        #ajudas {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 16px;
+        }
+
+        #ajudas .btn {
+            width: 5.5em;
+            height: 5.5em;
+            border-radius: 100%;
+        }
+    </style>
+    <script>
+        let token = obterToken();
+        if (!token) {
+            let params = {
+                "msg": "Você precisa fazer login para acessar essa página",
+                "returnTo": window.location.href
+            }
+            window.location.href = "/login.html?" + $.param(params);
+        }
+    </script>
+</head>
+
+<body>
+    <nav class="triviaNav"></nav>
+    <div class="container">
+        <span id="nomePartida">Conhecimentos Gerais</span>
+        <div style="display:flex; margin-top:10px">
+            <div id="containerPergunta"><span id="indicePergunta">1.</span>
+                <span id="textoPergunta">Quantos cocos uma andorinha carrega?</span>
+            </div>
+            <div id="containerAmpulheta">
+                <i class="fas fa-hourglass fa-8x" id="ampulheta"></i>
+            </div>
+        </div>
+        <div id="opcoes">
+            <button type="button" class="btn btn-light btn-block">A) 1</button>
+            <button type="button" class="btn btn-light btn-block">B) 0</button>
+            <button type="button" class="btn btn-light btn-block">C) Europeias ou Americanas?</button>
+            <button type="button" class="btn btn-light btn-block">D) Guarapari Búzios</button>
+        </div>
+        <div id="ajudas">
+            <button type="button" class="btn btn-danger"><i class="fas fa-bomb fa-3x"></i></button>
+            <button type="button" class="btn btn-warning"><i class="fas fa-rocket fa-3x"></i></button>
+            <button type="button" class="btn btn-info"><i class="fas fa-users fa-3x"></i></button>
+        </div>
+
+        <script>
+            let idPartida = getURLParameter("idPartida");
+        </script>
+
+    </div>
+
+
+</body>
+
+</html>
