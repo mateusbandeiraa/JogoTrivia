@@ -91,6 +91,17 @@ public class Usuario {
 		setAtivo(ativo);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Usuario) {
+			Usuario usuario = (Usuario) obj;
+			if(usuario.getId() != 0 && this.getId() != 0) {
+				return usuario.getId() == this.getId();
+			}
+		}
+		return super.equals(obj);
+	}
+
 	public TokenAutenticacao autenticar(String senha) throws IllegalArgumentException {
 		if (BCrypt.checkpw(senha, hashSenha)) {
 			return new TokenAutenticacao(this);

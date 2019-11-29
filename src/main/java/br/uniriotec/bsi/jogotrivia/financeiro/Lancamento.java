@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
@@ -36,6 +37,7 @@ public abstract class Lancamento {
 	private Date data;
 
 	@ManyToOne(optional = false)
+	@JsonBackReference
 	private Usuario usuario;
 
 	public Lancamento() {

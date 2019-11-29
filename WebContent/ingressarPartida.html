@@ -214,6 +214,7 @@
             $("#ajudaHandle").css("display", "none");
             $("form button[type=submit]").css("display", "none");
             $("#divFeedback").html("Inscrição realizada! Aguarde o início da partida.").addClass("alert").addClass("alert-success");
+            window.location.href = '/partida.html?idPartida=' + idPartida;
             setupPagina();
           }
 

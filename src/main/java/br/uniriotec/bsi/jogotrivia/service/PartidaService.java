@@ -28,15 +28,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.gameplay.EstadoPartida;
+import br.uniriotec.bsi.jogotrivia.gameplay.Opcao;
+import br.uniriotec.bsi.jogotrivia.gameplay.Palpite;
 import br.uniriotec.bsi.jogotrivia.gameplay.Participante;
 import br.uniriotec.bsi.jogotrivia.gameplay.Partida;
 import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
+import br.uniriotec.bsi.jogotrivia.persistence.PalpiteDao;
+import br.uniriotec.bsi.jogotrivia.persistence.ParticipanteDao;
 import br.uniriotec.bsi.jogotrivia.persistence.PartidaDao;
 import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
 import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaAberta;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
 
 @Path("/partidaService")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -72,6 +78,15 @@ public class PartidaService {
 				if (getUsuarioAutenticado().getPrivilegio().equals(Privilegio.ANFITRIAO)
 						|| getUsuarioAutenticado().getPrivilegio().equals(Privilegio.MODERADOR)) {
 					view = ViewAnfitriao.class;
+
+				} else if (partida.usuarioEstaInscrito(getUsuarioAutenticado())) {
+					if (partida.getRodadaAtual() != null) {
+						if (partida.getRodadaAtual().estaAberta()) {
+							view = ViewRodadaAberta.class;
+						} else {
+							view = ViewRodadaEncerrada.class;
+						}
+					}
 				}
 				return buildResponse(Status.OK, partida, view);
 			} else {
@@ -182,5 +197,25 @@ public class PartidaService {
 		participante.getUsuario().getSaldo(); // TODO BACALHAU
 
 		return buildResponse(Status.ACCEPTED, participante, ViewAutenticado.class);
+	}
+
+	@POST
+	@Path("/registrarPalpite")
+	@Autenticado
+	public Response registrarPalpite(JsonNode message) {
+		try {
+			Integer idPartida = message.get("idPartida").asInt();
+			Integer indiceOpcao = message.get("opcao").asInt();
+			Partida partida = new PartidaDao().select(idPartida);
+			Opcao opcao = partida.getRodadaAtual().getQuestao().getOpcoes().get(indiceOpcao);
+			Participante participante = new ParticipanteDao()
+					.selectPorUsuarioEPartida(obterUsuarioPorSecurityContext(securityContext).getId(), partida.getId());
+
+			Palpite palpite = new Palpite(new Date(), partida.getRodadaAtual(), participante, opcao);
+			new PalpiteDao().insert(palpite);
+			return buildResponse(Status.OK);
+		} catch (IllegalStateException ex) {
+			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
+		}
 	}
 }

@@ -23,10 +23,13 @@ import javax.ws.rs.core.SecurityContext;
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.gameplay.Participante;
+import br.uniriotec.bsi.jogotrivia.persistence.ParticipanteDao;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 
 @Path("/usuarioService")
@@ -158,7 +161,7 @@ public class UsuarioService {
 		SecureRandom random = new SecureRandom();
 		Integer numeroAleatorio = random.nextInt(3);
 		Integer quantidadeAleatoria = random.nextInt(3) + 1;
-		
+
 		switch (numeroAleatorio) {
 		case 0:
 			usuarioAutenticado.incrementarQuantidadeAjudasBomba(quantidadeAleatoria);
@@ -172,12 +175,21 @@ public class UsuarioService {
 		default:
 			break;
 		}
-		
+
 		new UsuarioDao().update(usuarioAutenticado);
-		
+
 		String urlCompartilhar = "https://twitter.com/intent/tweet?text=Estou%20jogando%20JogoTrivia!";
-		
+
 		return buildResponse(Status.OK, urlCompartilhar);
-		
+
+	}
+
+	@GET
+	@Path("/obterHistorico")
+	@Autenticado
+	public Response obterHistorico() {
+		List<Participante> historico = new ParticipanteDao()
+				.selectPorUsuario(obterUsuarioPorSecurityContext(securityContext).getId());
+		return buildResponse(Status.OK, historico, ViewHistorico.class);
 	}
 }

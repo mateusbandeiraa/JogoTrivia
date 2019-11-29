@@ -11,13 +11,14 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
-import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
-import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaAberta;
 
 @Entity
 public class Questao {
@@ -25,20 +26,20 @@ public class Questao {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@JsonView(ViewAnfitriao.class)
 	private int id;
-	
-	@JsonView(ViewAnfitriao.class)
+
+	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	private String textoPergunta;
-	
+
 	@JsonView(ViewAnfitriao.class)
 	private int tempoDisponivel; // em segundos
-	
+
 	@ManyToOne(optional = false)
 	@JsonView(ViewAnfitriao.class)
 	private Usuario autor;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderColumn
-	@JsonView(ViewPublico.class)
+	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	private List<Opcao> opcoes;
 
 	public Questao() {
@@ -57,6 +58,8 @@ public class Questao {
 		this.opcoes = opcoes;
 	}
 
+	@XmlElement
+	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	public int getQtdOpcoesRemoviveis() {
 		int removiveis = 0;
 		if (opcoes != null) {
@@ -113,7 +116,8 @@ public class Questao {
 		this.autor = autor;
 	}
 
-	@Transient
+	@XmlElement
+	@JsonView({ ViewAnfitriao.class, ViewRodadaEncerrada.class })
 	public Opcao getOpcaoCorreta() {
 		for (Opcao o : opcoes) {
 			if (o.isCorreta()) {

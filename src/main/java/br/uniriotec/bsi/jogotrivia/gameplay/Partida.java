@@ -2,6 +2,8 @@ package br.uniriotec.bsi.jogotrivia.gameplay;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +31,9 @@ import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.service.Views;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaAberta;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
 
 @Entity
 public class Partida {
@@ -47,7 +52,7 @@ public class Partida {
 	private List<Rodada> rodadas = new ArrayList<Rodada>();
 
 	@OneToOne
-	@JsonView(ViewAnfitriao.class)
+	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	private Rodada rodadaAtual;
 
 	@Column(nullable = false)
@@ -60,19 +65,19 @@ public class Partida {
 	private EstadoPartida estadoAtual = EstadoPartida.DISPONIVEL;
 
 	@Column
-	@JsonView(Views.ViewPublico.class)
+	@JsonView(ViewPublico.class)
 	private BigDecimal premio = BigDecimal.ZERO;
 
 	@Column
-	@JsonView(Views.ViewPublico.class)
+	@JsonView(ViewPublico.class)
 	private BigDecimal entrada = BigDecimal.ZERO;
 
 	@ManyToOne(optional = false)
-	@JsonView(Views.ViewPublico.class)
+	@JsonView(ViewPublico.class)
 	private Usuario anfitriao;
 
 	@OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-	@JsonView(Views.ViewPublico.class)
+	@JsonView(ViewPublico.class)
 	@JsonBackReference
 	private Set<Participante> participantes = new HashSet<>();
 
@@ -116,7 +121,7 @@ public class Partida {
 	}
 
 	public void proximaQuestao() {
-		if(this.getEstadoAtual() == EstadoPartida.DISPONIVEL) {
+		if (this.getEstadoAtual() == EstadoPartida.DISPONIVEL) {
 			this.setEstadoAtual(EstadoPartida.EM_ANDAMENTO);
 		}
 		int indiceRodadaAtual = this.getRodadas().indexOf(this.getRodadaAtual());
@@ -149,6 +154,31 @@ public class Partida {
 
 		participante.setPartida(this);
 		this.getParticipantes().add(participante);
+	}
+
+	public boolean usuarioEstaInscrito(Usuario usuario) {
+		for (Participante participante : getParticipantes()) {
+			if (participante.getUsuario().equals(usuario)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@XmlElement
+	@JsonView({ ViewAnfitriao.class, ViewRodadaEncerrada.class })
+	public List<Participante> ranking() {
+		List<Participante> lista = new ArrayList<>(this.getParticipantes());
+		Collections.sort(lista, new Comparator<Participante>() {
+
+			@Override
+			public int compare(Participante o1, Participante o2) {
+				return o1.pontuacaoTotal() - o2.pontuacaoTotal();
+			}
+		});
+
+		List<Participante> top10 = lista.subList(0, Math.min(10, lista.size()));
+		return top10;
 	}
 
 	public int getId() {
