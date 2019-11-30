@@ -55,7 +55,7 @@ public class Usuario {
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	private Date dataCadastro;
 
-	@Column(nullable = false, columnDefinition = " Jboolean default true")
+	@Column(nullable = false, columnDefinition = "boolean default true")
 	private boolean ativo;
 
 	@Enumerated(EnumType.STRING)

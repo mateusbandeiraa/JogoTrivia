@@ -128,7 +128,7 @@ public class UsuarioService {
 	}
 
 	@GET
-	@Autenticado(Privilegio.MODERADOR)
+	@Autenticado()
 	public Response get(@QueryParam("id") String idUsuario, @Context SecurityContext securityContext) {
 		UsuarioDao ud = new UsuarioDao();
 		Response response;

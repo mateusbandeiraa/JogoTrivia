@@ -22,6 +22,7 @@ import br.uniriotec.bsi.jogotrivia.persistence.PalpiteDao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
 
 @Entity
@@ -73,7 +74,7 @@ public class Participante {
 		this.partida = partida;
 	}
 
-	@JsonView({ ViewAutenticado.class, ViewHistorico.class })
+	@JsonView({ ViewAutenticado.class, ViewPublico.class, ViewHistorico.class, ViewRodadaEncerrada.class })
 	@JsonProperty("nickname")
 	public String getNickname() {
 		if (this.getHandle() != null) {

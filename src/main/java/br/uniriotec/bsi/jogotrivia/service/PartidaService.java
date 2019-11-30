@@ -160,7 +160,7 @@ public class PartidaService {
 			ip = headerIp;
 		}
 		if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
-			ip = "9.9.9.9";
+			ip = "200.156.26.34";
 		}
 
 		participante.setHandle(participanteJson.getHandle());
