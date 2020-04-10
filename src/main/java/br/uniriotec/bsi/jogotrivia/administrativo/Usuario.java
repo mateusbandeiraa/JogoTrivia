@@ -46,6 +46,8 @@ public class Usuario {
 	@JsonView(ViewPublico.class)
 	private String nome;
 
+	private transient String senha;
+
 	@Column(nullable = false)
 	private String hashSenha;
 
@@ -93,9 +95,9 @@ public class Usuario {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Usuario) {
+		if (obj instanceof Usuario) {
 			Usuario usuario = (Usuario) obj;
-			if(usuario.getId() != 0 && this.getId() != 0) {
+			if (usuario.getId() != 0 && this.getId() != 0) {
 				return usuario.getId() == this.getId();
 			}
 		}
@@ -150,6 +152,10 @@ public class Usuario {
 			throw new IllegalArgumentException("Nome inválido");
 		}
 		this.nome = nome;
+	}
+
+	public String getSenha() {
+		return senha;
 	}
 
 	public String getHashSenha() {
