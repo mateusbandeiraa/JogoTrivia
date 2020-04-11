@@ -22,9 +22,9 @@ import com.fasterxml.jackson.annotation.JsonView;
 import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
-import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
 import br.uniriotec.bsi.jogotrivia.suporte.Ticket;
+import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 
 /**
  * 
@@ -39,45 +39,55 @@ public class Usuario {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@JsonView(ViewPublico.class)
+	@JsonView(ViewUsuario.Proprio.class)
 	private int id;
 
 	@Column(nullable = false)
-	@JsonView(ViewPublico.class)
+	@JsonView({ ViewUsuario.Proprio.class, 
+				ViewUsuario.Proprio.Parametros.Cadastrar.class,
+				ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private String nome;
 
+	@JsonView({ViewUsuario.Proprio.Parametros.Cadastrar.class})
 	private transient String senha;
 
 	@Column(nullable = false)
 	private String hashSenha;
 
 	@Column(unique = true, nullable = false)
+	@JsonView({ ViewUsuario.Proprio.class,
+				ViewUsuario.Proprio.Parametros.Cadastrar.class,
+				ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private String email;
 
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
+	@JsonView({ViewUsuario.Proprio.class})
 	private Date dataCadastro;
 
 	@Column(nullable = false, columnDefinition = " Jboolean default true")
+	@JsonView({ ViewUsuario.Proprio.class, 
+				ViewUsuario.Moderador.Parametros.Atualizar.class})
 	private boolean ativo;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
-	@JsonView(ViewPublico.class)
+	@JsonView({ ViewUsuario.Proprio.class, 
+				ViewUsuario.Moderador.Parametros.Atualizar.class })
 	private Privilegio privilegio = Privilegio.USUARIO;
 
 	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView(ViewAutenticado.class)
+	@JsonView({ViewUsuario.Proprio.class})
 	private int quantidadeAjudasBomba;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView(ViewAutenticado.class)
+	@JsonView({ViewUsuario.Proprio.class})
 	private int quantidadeAjudasPopular;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView(ViewAutenticado.class)
+	@JsonView({ViewUsuario.Proprio.class})
 	private int quantidadeAjudasBonus;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
