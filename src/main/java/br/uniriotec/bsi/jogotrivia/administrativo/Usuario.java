@@ -176,10 +176,11 @@ public class Usuario {
 		this.hashSenha = hashSenha;
 	}
 
-	public void setSenha(String senha) throws IllegalArgumentException {
+	public void gerarHashSenha(String senha) throws IllegalArgumentException {
 		if (senha == null || senha.isEmpty()) {
 			throw new IllegalArgumentException("Senha inválida");
 		}
+		this.senha = senha;
 		this.setHashSenha(BCrypt.hashpw(senha, BCrypt.gensalt()));
 	}
 
