@@ -22,7 +22,7 @@
 
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>br.uniriotec.bsi.jogotrivia.service</param-value>
+			<param-value>br.uniriotec.bsi.jogotrivia.service, br.uniriotec.bsi.jogotrivia.config</param-value>
 		</init-param>
 	</servlet>
 
