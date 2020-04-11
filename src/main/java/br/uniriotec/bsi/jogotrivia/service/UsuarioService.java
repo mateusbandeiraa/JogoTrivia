@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,6 +21,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
@@ -31,8 +34,9 @@ import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 
-@Path("/usuarioService")
+@Path("/usuario")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class UsuarioService {
@@ -44,30 +48,27 @@ public class UsuarioService {
 	SecurityContext securityContext;
 
 	@POST
-	public Response cadastrar(Usuario usuarioJson) {
+	@JsonView(ViewUsuario.Proprio.class)
+	public Usuario cadastrar(@JsonView(ViewUsuario.Proprio.Parametros.Cadastrar.class) Usuario usuario) {
 		UsuarioDao ud = new UsuarioDao();
-		Usuario usuarioSanetizado;
 
 		try {
-			/**
-			 * usuarioSanetizado é utilizado para evitar que campos indesejados inseridos no
-			 * JSON do request possam ser salvos no banco de dados.
-			 */
-			usuarioSanetizado = new Usuario(usuarioJson.getNome(), usuarioJson.getEmail(), new Date(), true);
+			usuario.setDataCadastro(new Date());
+			usuario.setAtivo(true);
 
-			usuarioSanetizado.setSenha(usuarioJson.getHashSenha());
+			usuario.gerarHashSenha(usuario.getSenha());
 		} catch (IllegalArgumentException ex) {
-			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
+			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).build());
 		}
 
-		if (ud.selectByEmail(usuarioSanetizado.getEmail()) != null) {
-			return buildResponse(Status.BAD_REQUEST, "Usuário já cadastrado");
+		if (ud.selectByEmail(usuario.getEmail()) != null) {
+			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity("Usuário já cadastrado").build());
 		}
 
-		ud.insert(usuarioSanetizado);
-		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSOES_USUARIO);
+		ud.insert(usuario);
+		return usuario;
 	}
-
+	
 	@PUT
 	public Response atualizar(Usuario usuarioJson) {
 		UsuarioDao ud = new UsuarioDao();
@@ -84,7 +85,7 @@ public class UsuarioService {
 			usuarioSanetizado.setPrivilegio(usuarioJson.getPrivilegio());
 
 			if (usuarioJson.getHashSenha() != null && !usuarioJson.getHashSenha().isEmpty()) {
-				usuarioSanetizado.setSenha(usuarioJson.getHashSenha());
+				usuarioSanetizado.gerarHashSenha(usuarioJson.getHashSenha());
 			}
 
 		} catch (IllegalArgumentException ex) {
