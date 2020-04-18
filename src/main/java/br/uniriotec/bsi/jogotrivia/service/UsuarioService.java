@@ -10,6 +10,8 @@ import java.util.List;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -22,10 +24,12 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.Usuario.SenhaInvalidaException;
 import br.uniriotec.bsi.jogotrivia.gameplay.Participante;
 import br.uniriotec.bsi.jogotrivia.persistence.ParticipanteDao;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
@@ -57,7 +61,7 @@ public class UsuarioService {
 			usuario.setAtivo(true);
 
 			usuario.gerarHashSenha(usuario.getSenha());
-		} catch (IllegalArgumentException ex) {
+		} catch (IllegalArgumentException | SenhaInvalidaException ex) {
 			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).build());
 		}
 
@@ -68,33 +72,49 @@ public class UsuarioService {
 		ud.insert(usuario);
 		return usuario;
 	}
-	
-	@PUT
-	public Response atualizar(Usuario usuarioJson) {
-		UsuarioDao ud = new UsuarioDao();
-		Usuario usuarioSanetizado = ud.select(usuarioJson.getId());
 
-		if (usuarioSanetizado == null) {
-			return buildResponse(Status.BAD_REQUEST, "Usuário não encontrado.");
+	@PUT
+	@Autenticado
+	public Response atualizar(@JsonView(ViewUsuario.Moderador.Parametros.Atualizar.class) Usuario usuarioDadosNovos) {
+		UsuarioDao ud = new UsuarioDao();
+
+		Usuario usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
+		Usuario usuarioBD = ud.select(usuarioDadosNovos.getId());
+
+		if (usuarioRequerente.getPrivilegio().equals(Privilegio.USUARIO)) {
+			if (usuarioRequerente.getId() != usuarioDadosNovos.getId()) {
+				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+						.entity("Sem autorização para alterar dados de outro usuário.").build());
+			}
+			if (usuarioDadosNovos.getPrivilegio() != null
+					&& !usuarioBD.getPrivilegio().equals(usuarioDadosNovos.getPrivilegio())) {
+				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+						.entity("Sem autorização para alterar privilégios.").build());
+			}
+		}
+
+		if (usuarioBD == null) {
+			throw new BadRequestException(
+					Response.status(Status.BAD_REQUEST).entity("Usuário não encontrado.").build());
 		}
 
 		try {
-			usuarioSanetizado.setNome(usuarioJson.getNome());
-			usuarioSanetizado.setEmail(usuarioJson.getEmail());
-			usuarioSanetizado.setAtivo(usuarioJson.getAtivo());
-			usuarioSanetizado.setPrivilegio(usuarioJson.getPrivilegio());
-
-			if (usuarioJson.getHashSenha() != null && !usuarioJson.getHashSenha().isEmpty()) {
-				usuarioSanetizado.gerarHashSenha(usuarioJson.getHashSenha());
-			}
-
-		} catch (IllegalArgumentException ex) {
-			return buildResponse(Status.BAD_REQUEST, ex.getMessage());
+			usuarioBD.copiarAtributosNãoDefault(usuarioDadosNovos);
+		} catch (SenhaInvalidaException ex) {
+			throw new BadRequestException(ex.getMessage());
 		}
 
-		ud.update(usuarioSanetizado);
+		ud.update(usuarioBD);
 
-		return buildResponse(Status.ACCEPTED, usuarioSanetizado, EXCLUSOES_USUARIO);
+		String jsonString;
+		try {
+			jsonString = usuarioBD.serializar(usuarioRequerente);
+		} catch (JsonProcessingException ex) {
+			ex.printStackTrace();
+			throw new InternalServerErrorException();
+		}
+
+		return Response.accepted().entity(jsonString).build();
 	}
 
 	@POST

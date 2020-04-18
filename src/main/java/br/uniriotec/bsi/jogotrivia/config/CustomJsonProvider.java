@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Provider
@@ -32,5 +33,9 @@ public class CustomJsonProvider extends JacksonJaxbJsonProvider {
 	public CustomJsonProvider() {
 		super();
 		setMapper(mapper);
+	}
+	
+	public static ObjectWriter writerWithView(Class<?> serializationView) {
+		return mapper.writerWithView(serializationView);
 	}
 }

@@ -12,13 +12,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.collection.internal.PersistentBag;
 import org.mindrot.jbcrypt.BCrypt;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+import br.uniriotec.bsi.jogotrivia.config.CustomJsonProvider;
 import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
@@ -39,56 +41,52 @@ public class Usuario {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@JsonView(ViewUsuario.Proprio.class)
+	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private int id;
 
 	@Column(nullable = false)
-	@JsonView({ ViewUsuario.Proprio.class, 
-				ViewUsuario.Proprio.Parametros.Cadastrar.class,
-				ViewUsuario.Proprio.Parametros.Atualizar.class })
+	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
+			ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private String nome;
 
-	@JsonView({ViewUsuario.Proprio.Parametros.Cadastrar.class})
+	@JsonView({ ViewUsuario.Proprio.Parametros.Cadastrar.class })
 	private transient String senha;
 
 	@Column(nullable = false)
 	private String hashSenha;
 
 	@Column(unique = true, nullable = false)
-	@JsonView({ ViewUsuario.Proprio.class,
-				ViewUsuario.Proprio.Parametros.Cadastrar.class,
-				ViewUsuario.Proprio.Parametros.Atualizar.class })
+	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
+			ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private String email;
 
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
-	@JsonView({ViewUsuario.Proprio.class})
+	@JsonView({ ViewUsuario.Proprio.class })
 	private Date dataCadastro;
 
 	@Column(nullable = false, columnDefinition = " Jboolean default true")
-	@JsonView({ ViewUsuario.Proprio.class, 
-				ViewUsuario.Moderador.Parametros.Atualizar.class})
-	private boolean ativo;
+	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
+	private Boolean ativo;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
-	@JsonView({ ViewUsuario.Proprio.class, 
-				ViewUsuario.Moderador.Parametros.Atualizar.class })
-	private Privilegio privilegio = Privilegio.USUARIO;
+	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
+	private Privilegio privilegio;
 
 	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView({ViewUsuario.Proprio.class})
-	private int quantidadeAjudasBomba;
+	@JsonView({ ViewUsuario.Proprio.class })
+	private Integer quantidadeAjudasBomba;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView({ViewUsuario.Proprio.class})
-	private int quantidadeAjudasPopular;
+	@JsonView({ ViewUsuario.Proprio.class })
+	private Integer quantidadeAjudasPopular;
 
 	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-	@JsonView({ViewUsuario.Proprio.class})
-	private int quantidadeAjudasBonus;
+	@JsonView({ ViewUsuario.Proprio.class })
+	private Integer quantidadeAjudasBonus;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		this(nome, email, dataCadastro, ativo);
@@ -127,6 +125,102 @@ public class Usuario {
 		Mensagem m = new Mensagem(textoMensagem, this);
 		t.adicionarMensagem(m);
 		return t;
+	}
+
+	/**
+	 * Retorna a classe view apropriada para o privilégio passado.
+	 * 
+	 * @param privilegio
+	 * @return
+	 */
+	private Class<? extends ViewUsuario> obterViewApropriada(Privilegio privilegio) {
+		Class<? extends ViewUsuario> viewClass;
+		switch (privilegio) {
+		case USUARIO:
+			viewClass = ViewUsuario.Proprio.class;
+			break;
+		case MODERADOR:
+		case ANFITRIAO:
+			viewClass = ViewUsuario.Moderador.class;
+			break;
+		default:
+			throw new IllegalArgumentException("Privilegio inválido");
+		}
+		return viewClass;
+	}
+
+	/**
+	 * Serializa este Usuario, apenas incluindo os campos incluídos na view
+	 * apropriada para o privilégio passado.
+	 * 
+	 * @param privilegio
+	 * @return
+	 *         String JSON contendo os campos apropriados
+	 * @throws JsonProcessingException
+	 */
+	public String serializar(Privilegio privilegio) throws JsonProcessingException {
+		Class<? extends ViewUsuario> viewClass = this.obterViewApropriada(privilegio);
+		return CustomJsonProvider.writerWithView(viewClass).writeValueAsString(this);
+	}
+
+	/**
+	 * Serializa este Usuario, apenas incluindo os campos incluídos na view
+	 * apropriada para o privilégio do Usuário passado.
+	 * 
+	 * @param requerente
+	 *            Usuario do qual o privilégio será base para decidir qual view deve
+	 *            ser usada
+	 * @return
+	 *         String JSON contendo os campos apropriados
+	 * @throws JsonProcessingException
+	 */
+	public String serializar(Usuario requerente) throws JsonProcessingException {
+		return this.serializar(requerente.getPrivilegio());
+	}
+
+	/**
+	 * Copia os atributos não nulos e default para este objeto.
+	 * 
+	 * @param fonte
+	 *            Objeto usuário de onde os atributos serão copiados.
+	 * @throws SenhaInvalidaException
+	 */
+	public void copiarAtributosNãoDefault(Usuario fonte) throws SenhaInvalidaException {
+		if (fonte.getId() != 0) {
+			this.setId(fonte.getId());
+		}
+
+		if (StringUtils.isNotBlank(fonte.getNome())) {
+			this.setNome(fonte.getNome());
+		}
+
+		if (StringUtils.isNotBlank(fonte.getSenha())) {
+			fonte.gerarHashSenha(fonte.getSenha());
+		}
+
+		if (StringUtils.isNotBlank(fonte.getEmail())) {
+			this.setEmail(fonte.getEmail());
+		}
+
+		if (fonte.getAtivo() != null) {
+			this.setAtivo(fonte.getAtivo());
+		}
+
+		if (fonte.getPrivilegio() != null) {
+			this.setPrivilegio(fonte.getPrivilegio());
+		}
+		
+		if(fonte.getQuantidadeAjudasBomba() != null) {
+			this.setQuantidadeAjudasBomba(fonte.getQuantidadeAjudasBomba());
+		}
+		
+		if(fonte.getQuantidadeAjudasBonus() != null) {
+			this.setQuantidadeAjudasBonus(fonte.getQuantidadeAjudasBonus());
+		}
+		
+		if(fonte.getQuantidadeAjudasPopular() != null) {
+			this.setQuantidadeAjudasPopular(fonte.getQuantidadeAjudasPopular());
+		}
 	}
 
 //	@XmlElement
@@ -176,12 +270,20 @@ public class Usuario {
 		this.hashSenha = hashSenha;
 	}
 
-	public void gerarHashSenha(String senha) throws IllegalArgumentException {
+	public void gerarHashSenha(String senha) throws SenhaInvalidaException {
 		if (senha == null || senha.isEmpty()) {
-			throw new IllegalArgumentException("Senha inválida");
+			throw new SenhaInvalidaException();
 		}
 		this.senha = senha;
 		this.setHashSenha(BCrypt.hashpw(senha, BCrypt.gensalt()));
+	}
+
+	public class SenhaInvalidaException extends Exception {
+		private static final long serialVersionUID = -128714569199582797L;
+
+		public SenhaInvalidaException() {
+			super("Senha inválida");
+		}
 	}
 
 	public String getEmail() {
@@ -203,11 +305,11 @@ public class Usuario {
 		this.dataCadastro = dataCadastro;
 	}
 
-	public boolean getAtivo() {
+	public Boolean getAtivo() {
 		return ativo;
 	}
 
-	public void setAtivo(boolean ativo) {
+	public void setAtivo(Boolean ativo) {
 		this.ativo = ativo;
 	}
 
@@ -230,11 +332,11 @@ public class Usuario {
 		this.lancamentos = lancamentos;
 	}
 
-	public int getQuantidadeAjudasBomba() {
+	public Integer getQuantidadeAjudasBomba() {
 		return quantidadeAjudasBomba;
 	}
 
-	public void setQuantidadeAjudasBomba(int quantidadeAjudasBomba) {
+	public void setQuantidadeAjudasBomba(Integer quantidadeAjudasBomba) {
 		this.quantidadeAjudasBomba = quantidadeAjudasBomba;
 	}
 
@@ -242,11 +344,11 @@ public class Usuario {
 		this.setQuantidadeAjudasBomba(this.quantidadeAjudasBomba + incremento);
 	}
 
-	public int getQuantidadeAjudasPopular() {
+	public Integer getQuantidadeAjudasPopular() {
 		return quantidadeAjudasPopular;
 	}
 
-	public void setQuantidadeAjudasPopular(int quantidadeAjudasPopular) {
+	public void setQuantidadeAjudasPopular(Integer quantidadeAjudasPopular) {
 		this.quantidadeAjudasPopular = quantidadeAjudasPopular;
 	}
 
@@ -254,11 +356,11 @@ public class Usuario {
 		this.setQuantidadeAjudasPopular(this.quantidadeAjudasPopular + incremento);
 	}
 
-	public int getQuantidadeAjudasBonus() {
+	public Integer getQuantidadeAjudasBonus() {
 		return quantidadeAjudasBonus;
 	}
 
-	public void setQuantidadeAjudasBonus(int quantidadeAjudasBonus) {
+	public void setQuantidadeAjudasBonus(Integer quantidadeAjudasBonus) {
 		this.quantidadeAjudasBonus = quantidadeAjudasBonus;
 	}
 

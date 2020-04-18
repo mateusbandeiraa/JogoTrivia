@@ -4,7 +4,7 @@ public class ViewUsuario {
 	/**
 	 * Campos que o proprio usuario pode acessar
 	 */
-	public static class Proprio {
+	public static class Proprio extends ViewUsuario {
 		public static class Parametros {
 			/**
 			 * Campos de entrada no endpoint de cadastro
