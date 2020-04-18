@@ -22,7 +22,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
-import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -98,19 +97,19 @@ public class Partida {
 		this.entrada = entrada;
 	}
 
-	@XmlElement
+	// @XmlElement
 	@JsonView(Views.ViewPublico.class)
 	public int quantidadeRodadas() {
 		return this.getRodadas().size();
 	}
 
-	@XmlElement
+	// @XmlElement
 	@JsonView(Views.ViewPublico.class)
 	public int quantidadeParticipantes() {
 		return this.getParticipantes().size();
 	}
 
-	@XmlElement
+	// @XmlElement
 	@JsonView(Views.ViewPublico.class)
 	public int numeroRodadaAtual() {
 		if (this.getEstadoAtual() != EstadoPartida.EM_ANDAMENTO || rodadaAtual == null) {
@@ -165,7 +164,7 @@ public class Partida {
 		return false;
 	}
 
-	@XmlElement
+	// @XmlElement
 	@JsonView({ ViewAnfitriao.class, ViewRodadaEncerrada.class })
 	public List<Participante> ranking() {
 		List<Participante> lista = new ArrayList<>(this.getParticipantes());

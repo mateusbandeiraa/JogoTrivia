@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.Date;
 
 import javax.persistence.Entity;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -109,7 +108,7 @@ public class LancamentoMonetario extends Lancamento {
 		return estaPago;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView(ViewAutenticado.class)
 	@JsonProperty("urlCheckout")
 	public String getUrlCheckout() {

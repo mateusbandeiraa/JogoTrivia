@@ -11,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -146,7 +145,7 @@ public class Participante {
 		this.palpites = palpites;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView({ ViewAutenticado.class, ViewRodadaEncerrada.class, ViewAnfitriao.class, ViewHistorico.class })
 	public int pontuacaoTotal() {
 		int pontuacao = 0;

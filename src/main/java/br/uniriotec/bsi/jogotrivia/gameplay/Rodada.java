@@ -12,7 +12,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -83,13 +82,13 @@ public class Rodada {
 		this.dataInicio = dataInicio;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView(ViewPublico.class)
 	public int quantidadeRespostas() {
 		return getPalpites().size();
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView(ViewPublico.class)
 	public int tempoTotal() {
 		if (this.getQuestao() == null) {
@@ -98,7 +97,7 @@ public class Rodada {
 		return this.getTempoExtra() + this.getQuestao().getTempoDisponivel();
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	public Date dataLimite() {
 		if (getDataInicio() == null) {
@@ -107,7 +106,7 @@ public class Rodada {
 		return new Date(getDataInicio().getTime() + tempoTotal() * 1000);
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	public boolean estaAberta() {
 		Date dataLimite = this.dataLimite();

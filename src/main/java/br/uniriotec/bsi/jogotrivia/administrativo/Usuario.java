@@ -129,7 +129,7 @@ public class Usuario {
 		return t;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView(ViewAutenticado.class)
 	public BigDecimal getSaldo() {
 		BigDecimal saldo = BigDecimal.ZERO;

@@ -11,14 +11,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
-import javax.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
-import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaAberta;
+import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
 
 @Entity
 public class Questao {
@@ -58,7 +57,7 @@ public class Questao {
 		this.opcoes = opcoes;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView({ ViewAnfitriao.class, ViewRodadaAberta.class })
 	public int getQtdOpcoesRemoviveis() {
 		int removiveis = 0;
@@ -116,7 +115,7 @@ public class Questao {
 		this.autor = autor;
 	}
 
-	@XmlElement
+//	@XmlElement
 	@JsonView({ ViewAnfitriao.class, ViewRodadaEncerrada.class })
 	public Opcao getOpcaoCorreta() {
 		for (Opcao o : opcoes) {
