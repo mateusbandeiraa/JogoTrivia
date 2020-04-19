@@ -16,8 +16,8 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -36,9 +36,7 @@ import br.uniriotec.bsi.jogotrivia.persistence.ParticipanteDao;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
-import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
-import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
 import br.uniriotec.bsi.jogotrivia.view.ViewTokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 
@@ -162,23 +160,52 @@ public class UsuarioService {
 	}
 
 	@GET
-	@Autenticado(Privilegio.MODERADOR)
-	public Response get(@QueryParam("id") String idUsuario, @Context SecurityContext securityContext) {
-		UsuarioDao ud = new UsuarioDao();
-		Response response;
-		if (idUsuario != null) {
-			Usuario usuario = ud.select(Integer.valueOf(idUsuario));
-			ud.selectLancamentos(usuario);
-			if (usuario != null) {
-				response = buildResponse(Status.OK, usuario, ViewAutenticado.class);
-			} else {
-				response = buildResponse(Status.NOT_FOUND, "Usuário não encontrado");
-			}
-		} else {
-			List<Usuario> usuarios = ud.selectAll();
-			response = buildResponse(Status.OK, usuarios, ViewPublico.class);
+	@Autenticado
+	@Path("/{id}")
+	public Response obter(@PathParam("id") Integer idUsuario) {
+		Usuario usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
+		
+		if(usuarioRequerente.getPrivilegio().equals(Privilegio.USUARIO) && !idUsuario.equals(usuarioRequerente.getId())) {
+			
+			
+			
+			throw new NotAuthorizedException(
+					Response.status(Status.UNAUTHORIZED)
+					.entity("Sem autorização para exibir dados deste usuário.")
+					.build());
+
+		
 		}
-		return response;
+
+		UsuarioDao ud = new UsuarioDao();
+		
+		Usuario usuarioBD = ud.select(idUsuario);
+		
+		if(usuarioBD == null) {
+			throw new NotFoundException(
+					Response.status(Status.NOT_FOUND)
+					.entity("Usuário não encontrado.")
+					.build());
+		}
+		
+		String jsonUsuario;
+		try {
+			jsonUsuario = usuarioBD.serializar(usuarioRequerente);
+		} catch (JsonProcessingException ex) {
+			ex.printStackTrace();
+			throw new InternalServerErrorException();
+		}
+		
+		return Response.ok(jsonUsuario).build();
+	}
+	
+	@GET
+	@Autenticado({Privilegio.MODERADOR})
+	@JsonView(ViewUsuario.Moderador.class)
+	public List<Usuario> obterTodos() {
+		UsuarioDao ud = new UsuarioDao();
+		List<Usuario> listaUsuarios = ud.selectAll();
+		return listaUsuarios;
 	}
 
 	@GET
