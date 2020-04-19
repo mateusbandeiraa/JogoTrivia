@@ -49,7 +49,8 @@ public class Usuario {
 			ViewUsuario.Proprio.Parametros.Atualizar.class })
 	private String nome;
 
-	@JsonView({ ViewUsuario.Proprio.Parametros.Cadastrar.class })
+	@JsonView({ ViewUsuario.Proprio.Parametros.Cadastrar.class,
+			ViewUsuario.Proprio.Parametros.Autenticar.class })
 	private transient String senha;
 
 	@Column(nullable = false)
@@ -57,36 +58,38 @@ public class Usuario {
 
 	@Column(unique = true, nullable = false)
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
-			ViewUsuario.Proprio.Parametros.Atualizar.class })
+			ViewUsuario.Proprio.Parametros.Atualizar.class,
+			ViewUsuario.Proprio.Parametros.Autenticar.class })
 	private String email;
 
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	@JsonView({ ViewUsuario.Proprio.class })
 	private Date dataCadastro;
 
-	@Column(nullable = false, columnDefinition = " Jboolean default true")
+	@Column(nullable = false, columnDefinition = "boolean default true")
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
-	private Boolean ativo;
+	private Boolean ativo = true;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
+	@Column(nullable = false,
+			columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
 	private Privilegio privilegio;
 
 	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column
 	@JsonView({ ViewUsuario.Proprio.class })
-	private Integer quantidadeAjudasBomba;
+	private Integer quantidadeAjudasBomba = 0;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column
 	@JsonView({ ViewUsuario.Proprio.class })
-	private Integer quantidadeAjudasPopular;
+	private Integer quantidadeAjudasPopular = 0;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column
 	@JsonView({ ViewUsuario.Proprio.class })
-	private Integer quantidadeAjudasBonus;
+	private Integer quantidadeAjudasBonus = 0;
 
 	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
 		this(nome, email, dataCadastro, ativo);
@@ -112,11 +115,19 @@ public class Usuario {
 		return super.equals(obj);
 	}
 
-	public TokenAutenticacao autenticar(String senha) throws IllegalArgumentException {
+	/**
+	 * Instancia um objeto TokenAutenticacao caso a senha passada esteja correta.
+	 * Retorna null caso a senha esteja incorreta.
+	 * 
+	 * @param senha
+	 *            String contendo a senha em plain-text
+	 * @return
+	 */
+	public TokenAutenticacao autenticar(String senha) {
 		if (BCrypt.checkpw(senha, hashSenha)) {
 			return new TokenAutenticacao(this);
 		} else {
-			throw new IllegalArgumentException("Senha incorreta");
+			return null;
 		}
 	}
 
@@ -168,7 +179,8 @@ public class Usuario {
 	 * apropriada para o privilégio do Usuário passado.
 	 * 
 	 * @param requerente
-	 *            Usuario do qual o privilégio será base para decidir qual view deve
+	 *            Usuario do qual o privilégio será base para decidir qual view
+	 *            deve
 	 *            ser usada
 	 * @return
 	 *         String JSON contendo os campos apropriados
@@ -209,21 +221,21 @@ public class Usuario {
 		if (fonte.getPrivilegio() != null) {
 			this.setPrivilegio(fonte.getPrivilegio());
 		}
-		
-		if(fonte.getQuantidadeAjudasBomba() != null) {
+
+		if (fonte.getQuantidadeAjudasBomba() != 0) {
 			this.setQuantidadeAjudasBomba(fonte.getQuantidadeAjudasBomba());
 		}
-		
-		if(fonte.getQuantidadeAjudasBonus() != null) {
+
+		if (fonte.getQuantidadeAjudasBonus() != 0) {
 			this.setQuantidadeAjudasBonus(fonte.getQuantidadeAjudasBonus());
 		}
-		
-		if(fonte.getQuantidadeAjudasPopular() != null) {
+
+		if (fonte.getQuantidadeAjudasPopular() != 0) {
 			this.setQuantidadeAjudasPopular(fonte.getQuantidadeAjudasPopular());
 		}
 	}
 
-//	@XmlElement
+	// @XmlElement
 	@JsonView(ViewAutenticado.class)
 	public BigDecimal getSaldo() {
 		BigDecimal saldo = BigDecimal.ZERO;

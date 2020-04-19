@@ -17,6 +17,12 @@ public class ViewUsuario {
 			 */
 			public static class Atualizar {
 			}
+
+			/**
+			 * Campos de entrada no endpoint de autenticação
+			 */
+			public static class Autenticar {
+			}
 		}
 	}
 

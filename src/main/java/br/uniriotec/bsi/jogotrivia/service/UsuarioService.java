@@ -12,6 +12,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -38,6 +39,7 @@ import br.uniriotec.bsi.jogotrivia.service.ServiceUtils.ParExclusoes;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
+import br.uniriotec.bsi.jogotrivia.view.ViewTokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 
 @Path("/usuario")
@@ -59,6 +61,7 @@ public class UsuarioService {
 		try {
 			usuario.setDataCadastro(new Date());
 			usuario.setAtivo(true);
+			usuario.setPrivilegio(Privilegio.USUARIO);
 
 			usuario.gerarHashSenha(usuario.getSenha());
 		} catch (IllegalArgumentException | SenhaInvalidaException ex) {
@@ -83,19 +86,25 @@ public class UsuarioService {
 
 		if (usuarioRequerente.getPrivilegio().equals(Privilegio.USUARIO)) {
 			if (usuarioRequerente.getId() != usuarioDadosNovos.getId()) {
-				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
-						.entity("Sem autorização para alterar dados de outro usuário.").build());
+				throw new NotAuthorizedException(
+						Response.status(Status.UNAUTHORIZED)
+								.entity("Sem autorização para alterar dados de outro usuário.")
+								.build());
 			}
 			if (usuarioDadosNovos.getPrivilegio() != null
 					&& !usuarioBD.getPrivilegio().equals(usuarioDadosNovos.getPrivilegio())) {
-				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
-						.entity("Sem autorização para alterar privilégios.").build());
+				throw new NotAuthorizedException(
+						Response.status(Status.UNAUTHORIZED)
+								.entity("Sem autorização para alterar privilégios.")
+								.build());
 			}
 		}
 
 		if (usuarioBD == null) {
 			throw new BadRequestException(
-					Response.status(Status.BAD_REQUEST).entity("Usuário não encontrado.").build());
+					Response.status(Status.BAD_REQUEST)
+					.entity("Usuário não encontrado.")
+					.build());
 		}
 
 		try {
@@ -119,21 +128,25 @@ public class UsuarioService {
 
 	@POST
 	@Path("/autenticar")
-	public Response autenticar(Usuario usuarioJson) {
+	@JsonView(ViewTokenAutenticacao.Proprio.class)
+	public TokenAutenticacao autenticar(@JsonView(ViewUsuario.Proprio.Parametros.Autenticar.class) Usuario usuarioRequerente) {
 		UsuarioDao ud = new UsuarioDao();
-		Usuario usuario = ud.selectByEmail(usuarioJson.getEmail());
+		Usuario usuario = ud.selectByEmail(usuarioRequerente.getEmail());
 
-		TokenAutenticacao tokenNovo;
+		if (usuario == null) {
+			throw new NotFoundException(
+					Response.status(Status.NOT_FOUND)
+					.entity("E-mail não encontrado.")
+					.build());
+		}
 
-		try {
-			if (usuario == null) {
-				throw new Exception();
-			}
+		TokenAutenticacao tokenNovo = usuario.autenticar(usuarioRequerente.getSenha());
 
-			tokenNovo = usuario.autenticar(usuarioJson.getHashSenha());
-
-		} catch (Exception ex) {
-			return buildResponse(Status.UNAUTHORIZED, "Usuário ou senha incorretos");
+		if (tokenNovo == null) {
+			throw new NotAuthorizedException(
+					Response.status(Status.UNAUTHORIZED)
+					.entity("Senha incorreta.")
+					.build());
 		}
 
 		TokenAutenticacaoDao tad = new TokenAutenticacaoDao();
@@ -145,7 +158,7 @@ public class UsuarioService {
 
 		tad.insert(tokenNovo);
 
-		return buildResponse(Status.ACCEPTED, tokenNovo, ViewAutenticado.class);
+		return tokenNovo;
 	}
 
 	@GET
