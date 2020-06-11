@@ -1,7 +1,5 @@
 package br.uniriotec.bsi.jogotrivia.service;
 
-import static com.monitorjbl.json.Match.match;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,8 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monitorjbl.json.JsonView;
-import com.monitorjbl.json.JsonViewModule;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
@@ -46,25 +42,25 @@ public abstract class ServiceUtils {
 		return Response.status(status).entity(entity).build();
 	}
 
-	public static Response buildResponse(Status status, Object entity, ParExclusoes... exclusoes) {
-		ObjectMapper mapper = new ObjectMapper().registerModule(new JsonViewModule());
-		Response resposta;
-
-		try {
-			JsonView<Object> view = JsonView.with(entity);
-			for (ParExclusoes par : exclusoes) {
-				view = view.onClass(par.classe, match().exclude(par.exclusoes));
-			}
-			String json = mapper.writeValueAsString(view);
-
-			resposta = Response.status(status).entity(json).build();
-		} catch (JsonProcessingException ex) {
-			resposta = Response.status(Status.INTERNAL_SERVER_ERROR).build();
-			ex.printStackTrace();
-		}
-
-		return resposta;
-	}
+//	public static Response buildResponse(Status status, Object entity, ParExclusoes... exclusoes) {
+//		ObjectMapper mapper = new ObjectMapper().registerModule(new JsonViewModule());
+//		Response resposta;
+//
+//		try {
+//			JsonView<Object> view = JsonView.with(entity);
+//			for (ParExclusoes par : exclusoes) {
+//				view = view.onClass(par.classe, match().exclude(par.exclusoes));
+//			}
+//			String json = mapper.writeValueAsString(view);
+//
+//			resposta = Response.status(status).entity(json).build();
+//		} catch (JsonProcessingException ex) {
+//			resposta = Response.status(Status.INTERNAL_SERVER_ERROR).build();
+//			ex.printStackTrace();
+//		}
+//
+//		return resposta;
+//	}
 
 	public static Response buildResponse(Status status, Object entity, Class<?> view) {
 		ObjectMapper mapper = new ObjectMapper();
