@@ -59,7 +59,7 @@
 
                                     fetch(LOGIN_FORM.getAttribute('action'), {
                                         method: LOGIN_FORM.getAttribute('method'),
-                                        body: FormDataToJSON(requestData),
+                                        body: formDataToJSON(requestData),
                                         headers: {
                                             "Content-Type": 'application/json'
                                         }
