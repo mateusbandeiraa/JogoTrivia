@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 
 @Entity
@@ -31,11 +31,11 @@ public class LancamentoMonetario extends Lancamento {
 		super();
 	}
 
-	public LancamentoMonetario(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario, Date data) {
+	public LancamentoMonetario(BigDecimal valor, DirecaoLancamento direcao, User usuario, Date data) {
 		super(valor, direcao, usuario, data);
 	}
 
-	public LancamentoMonetario(BigDecimal valor, Usuario usuario, DirecaoLancamento direcao) {
+	public LancamentoMonetario(BigDecimal valor, User usuario, DirecaoLancamento direcao) {
 		super(valor, direcao, usuario);
 	}
 

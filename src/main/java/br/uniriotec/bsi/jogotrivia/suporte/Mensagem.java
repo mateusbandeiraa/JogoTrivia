@@ -9,7 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 
 @Entity
 public class Mensagem {
@@ -21,20 +21,20 @@ public class Mensagem {
 	@Column(nullable = false)
 	private Date dataCriacao;
 	@ManyToOne
-	private Usuario autor;
+	private User autor;
 
 	public Mensagem() {
 		super();
 	}
 	
-	public Mensagem(String conteudo, Usuario autor) {
+	public Mensagem(String conteudo, User autor) {
 		this();
 		this.conteudo = conteudo;
 		this.dataCriacao = new Date();
 		this.autor = autor;
 	}
 
-	public Mensagem(String conteudo, Usuario autor, Date dataCriacao) {
+	public Mensagem(String conteudo, User autor, Date dataCriacao) {
 		this.conteudo = conteudo;
 		this.dataCriacao = dataCriacao;
 		this.autor = autor;
@@ -64,11 +64,11 @@ public class Mensagem {
 		this.dataCriacao = dataCriacao;
 	}
 
-	public Usuario getAutor() {
+	public User getAutor() {
 		return autor;
 	}
 
-	public void setAutor(Usuario autor) {
+	public void setAutor(User autor) {
 		this.autor = autor;
 	}
 

@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.TicketDao;
 import br.uniriotec.bsi.jogotrivia.suporte.EstadoTicket;
 import br.uniriotec.bsi.jogotrivia.suporte.Mensagem;
@@ -35,7 +35,7 @@ public class SuporteService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response abrirTicket(@FormParam("assunto") String assunto, @FormParam("mensagem") String mensagem,
 			@Context SecurityContext securityContext) {
-		Usuario usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
+		User usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
 
 		Ticket ticket = usuarioAutenticado.abrirTicket(assunto, mensagem);
 
@@ -71,7 +71,7 @@ public class SuporteService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response adicionarMensagem(@FormParam("ticketId") String ticket, @FormParam("mensagem") String mensagem,
 			@Context SecurityContext securityContext) {
-		Usuario usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
+		User usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
 
 		TicketDao td = new TicketDao();
 		Ticket ticketSanetizado = td.select(Integer.valueOf(ticket));

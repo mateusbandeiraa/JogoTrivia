@@ -18,7 +18,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
 @Autenticado
@@ -78,10 +78,10 @@ public class FiltroAutorizacao implements ContainerRequestFilter {
 
 	private void checarPermissoes(List<Privilegio> privilegiosAutorizados) throws Exception {
 		String userId = securityContext.getUserPrincipal().getName();
-		Usuario usuario = new UsuarioDao().select(Integer.valueOf(userId));
+		User usuario = new UsuarioDao().select(Integer.valueOf(userId));
 
 		for (Privilegio privilegio : privilegiosAutorizados) {
-			if (privilegio.equals(usuario.getPrivilegio())) {
+			if (privilegio.equals(usuario.getAuthorization())) {
 				return;
 			}
 		}

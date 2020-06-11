@@ -24,7 +24,7 @@ public class TokenAutenticacao {
 	@OneToOne
 	@JoinColumn
 	@JsonView(ViewTokenAutenticacao.Proprio.class)
-	private Usuario usuario;
+	private User usuario;
 	
 	@Column(nullable = false)
 	@JsonView(ViewTokenAutenticacao.Proprio.class)
@@ -44,7 +44,7 @@ public class TokenAutenticacao {
 
 	}
 
-	public TokenAutenticacao(Usuario usuario) {
+	public TokenAutenticacao(User usuario) {
 		this();
 		this.usuario = usuario;
 		this.token = new BigInteger(130, new SecureRandom()).toString(32);
@@ -60,11 +60,11 @@ public class TokenAutenticacao {
 		this.id = id;
 	}
 
-	public Usuario getUsuario() {
+	public User getUsuario() {
 		return usuario;
 	}
 
-	public void setUsuario(Usuario usuario) {
+	public void setUsuario(User usuario) {
 		this.usuario = usuario;
 	}
 

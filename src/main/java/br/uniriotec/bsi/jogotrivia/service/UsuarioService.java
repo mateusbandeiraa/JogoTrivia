@@ -29,8 +29,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario.SenhaInvalidaException;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
+import br.uniriotec.bsi.jogotrivia.administrativo.User.InvalidPasswordException;
 import br.uniriotec.bsi.jogotrivia.gameplay.Participante;
 import br.uniriotec.bsi.jogotrivia.persistence.ParticipanteDao;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
@@ -40,12 +40,12 @@ import br.uniriotec.bsi.jogotrivia.service.Views.ViewHistorico;
 import br.uniriotec.bsi.jogotrivia.view.ViewTokenAutenticacao;
 import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 
-@Path("/usuario")
+@Path("/user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf8")
 public class UsuarioService {
 
-	public static final ParExclusoes EXCLUSOES_USUARIO = new ParExclusoes(Usuario.class, "hashSenha");
+	public static final ParExclusoes EXCLUSOES_USUARIO = new ParExclusoes(User.class, "hashSenha");
 	public static final ParExclusoes EXCLUSOES_TOKEN_AUTENTICACAO = new ParExclusoes(TokenAutenticacao.class, "id");
 
 	@Context
@@ -53,16 +53,16 @@ public class UsuarioService {
 
 	@POST
 	@JsonView(ViewUsuario.Proprio.class)
-	public Usuario cadastrar(@JsonView(ViewUsuario.Proprio.Parametros.Cadastrar.class) Usuario usuario) {
+	public User cadastrar(@JsonView(ViewUsuario.Proprio.Parametros.Cadastrar.class) User usuario) {
 		UsuarioDao ud = new UsuarioDao();
 
 		try {
-			usuario.setDataCadastro(new Date());
-			usuario.setAtivo(true);
-			usuario.setPrivilegio(Privilegio.USUARIO);
+			usuario.setRegisterDate(new Date());
+			usuario.setActive(true);
+			usuario.setAuthorization(Privilegio.USUARIO);
 
-			usuario.gerarHashSenha(usuario.getSenha());
-		} catch (IllegalArgumentException | SenhaInvalidaException ex) {
+			usuario.generatePasswordHash(usuario.getPassword());
+		} catch (IllegalArgumentException | InvalidPasswordException ex) {
 			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).build());
 		}
 
@@ -76,21 +76,21 @@ public class UsuarioService {
 
 	@PUT
 	@Autenticado
-	public Response atualizar(@JsonView(ViewUsuario.Moderador.Parametros.Atualizar.class) Usuario usuarioDadosNovos) {
+	public Response atualizar(@JsonView(ViewUsuario.Moderador.Parametros.Atualizar.class) User usuarioDadosNovos) {
 		UsuarioDao ud = new UsuarioDao();
 
-		Usuario usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
-		Usuario usuarioBD = ud.select(usuarioDadosNovos.getId());
+		User usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
+		User usuarioBD = ud.select(usuarioDadosNovos.getId());
 
-		if (usuarioRequerente.getPrivilegio().equals(Privilegio.USUARIO)) {
+		if (usuarioRequerente.getAuthorization().equals(Privilegio.USUARIO)) {
 			if (usuarioRequerente.getId() != usuarioDadosNovos.getId()) {
 				throw new NotAuthorizedException(
 						Response.status(Status.UNAUTHORIZED)
 								.entity("Sem autorização para alterar dados de outro usuário.")
 								.build());
 			}
-			if (usuarioDadosNovos.getPrivilegio() != null
-					&& !usuarioBD.getPrivilegio().equals(usuarioDadosNovos.getPrivilegio())) {
+			if (usuarioDadosNovos.getAuthorization() != null
+					&& !usuarioBD.getAuthorization().equals(usuarioDadosNovos.getAuthorization())) {
 				throw new NotAuthorizedException(
 						Response.status(Status.UNAUTHORIZED)
 								.entity("Sem autorização para alterar privilégios.")
@@ -106,8 +106,8 @@ public class UsuarioService {
 		}
 
 		try {
-			usuarioBD.copiarAtributosNãoDefault(usuarioDadosNovos);
-		} catch (SenhaInvalidaException ex) {
+			usuarioBD.copyNonDefaultAttributes(usuarioDadosNovos);
+		} catch (InvalidPasswordException ex) {
 			throw new BadRequestException(ex.getMessage());
 		}
 
@@ -115,7 +115,7 @@ public class UsuarioService {
 
 		String jsonString;
 		try {
-			jsonString = usuarioBD.serializar(usuarioRequerente);
+			jsonString = usuarioBD.serialize(usuarioRequerente);
 		} catch (JsonProcessingException ex) {
 			ex.printStackTrace();
 			throw new InternalServerErrorException();
@@ -125,11 +125,11 @@ public class UsuarioService {
 	}
 
 	@POST
-	@Path("/autenticar")
+	@Path("/auth")
 	@JsonView(ViewTokenAutenticacao.Proprio.class)
-	public TokenAutenticacao autenticar(@JsonView(ViewUsuario.Proprio.Parametros.Autenticar.class) Usuario usuarioRequerente) {
+	public TokenAutenticacao autenticar(@JsonView(ViewUsuario.Proprio.Parametros.Autenticar.class) User usuarioRequerente) {
 		UsuarioDao ud = new UsuarioDao();
-		Usuario usuario = ud.selectByEmail(usuarioRequerente.getEmail());
+		User usuario = ud.selectByEmail(usuarioRequerente.getEmail());
 
 		if (usuario == null) {
 			throw new NotFoundException(
@@ -138,7 +138,7 @@ public class UsuarioService {
 					.build());
 		}
 
-		TokenAutenticacao tokenNovo = usuario.autenticar(usuarioRequerente.getSenha());
+		TokenAutenticacao tokenNovo = usuario.authenticate(usuarioRequerente.getPassword());
 
 		if (tokenNovo == null) {
 			throw new NotAuthorizedException(
@@ -163,9 +163,9 @@ public class UsuarioService {
 	@Autenticado
 	@Path("/{id}")
 	public Response obter(@PathParam("id") Integer idUsuario) {
-		Usuario usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
+		User usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
 		
-		if(usuarioRequerente.getPrivilegio().equals(Privilegio.USUARIO) && !idUsuario.equals(usuarioRequerente.getId())) {
+		if(usuarioRequerente.getAuthorization().equals(Privilegio.USUARIO) && !idUsuario.equals(usuarioRequerente.getId())) {
 			
 			
 			
@@ -179,7 +179,7 @@ public class UsuarioService {
 
 		UsuarioDao ud = new UsuarioDao();
 		
-		Usuario usuarioBD = ud.select(idUsuario);
+		User usuarioBD = ud.select(idUsuario);
 		
 		if(usuarioBD == null) {
 			throw new NotFoundException(
@@ -190,7 +190,7 @@ public class UsuarioService {
 		
 		String jsonUsuario;
 		try {
-			jsonUsuario = usuarioBD.serializar(usuarioRequerente);
+			jsonUsuario = usuarioBD.serialize(usuarioRequerente);
 		} catch (JsonProcessingException ex) {
 			ex.printStackTrace();
 			throw new InternalServerErrorException();
@@ -202,9 +202,9 @@ public class UsuarioService {
 	@GET
 	@Autenticado({Privilegio.MODERADOR})
 	@JsonView(ViewUsuario.Moderador.class)
-	public List<Usuario> obterTodos() {
+	public List<User> obterTodos() {
 		UsuarioDao ud = new UsuarioDao();
-		List<Usuario> listaUsuarios = ud.selectAll();
+		List<User> listaUsuarios = ud.selectAll();
 		return listaUsuarios;
 	}
 
@@ -218,7 +218,7 @@ public class UsuarioService {
 	@Path("/obterMaisAjudas")
 	@Autenticado
 	public Response obterMaisAjudas() {
-		Usuario usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
+		User usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
 		SecureRandom random = new SecureRandom();
 		Integer numeroAleatorio = random.nextInt(3);
 		Integer quantidadeAleatoria = random.nextInt(3) + 1;

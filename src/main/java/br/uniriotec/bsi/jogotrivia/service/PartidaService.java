@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.gameplay.EstadoPartida;
 import br.uniriotec.bsi.jogotrivia.gameplay.Opcao;
 import br.uniriotec.bsi.jogotrivia.gameplay.Palpite;
@@ -55,9 +55,9 @@ public class PartidaService {
 	@Context
 	SecurityContext securityContext;
 
-	private Usuario usuarioAutenticado;
+	private User usuarioAutenticado;
 
-	private Usuario getUsuarioAutenticado() {
+	private User getUsuarioAutenticado() {
 		if (usuarioAutenticado == null) {
 			usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
 		}
@@ -75,8 +75,8 @@ public class PartidaService {
 			Partida partida = new PartidaDao().select(idPartida);
 			if (partida != null) {
 				Class<?> view = ViewPublico.class;
-				if (getUsuarioAutenticado().getPrivilegio().equals(Privilegio.ANFITRIAO)
-						|| getUsuarioAutenticado().getPrivilegio().equals(Privilegio.MODERADOR)) {
+				if (getUsuarioAutenticado().getAuthorization().equals(Privilegio.ANFITRIAO)
+						|| getUsuarioAutenticado().getAuthorization().equals(Privilegio.MODERADOR)) {
 					view = ViewAnfitriao.class;
 
 				} else if (partida.usuarioEstaInscrito(getUsuarioAutenticado())) {
@@ -194,7 +194,7 @@ public class PartidaService {
 
 		pd.update(partida);
 
-		participante.getUsuario().getSaldo(); // TODO BACALHAU
+		participante.getUsuario().getCredits(); // TODO BACALHAU
 
 		return buildResponse(Status.ACCEPTED, participante, ViewAutenticado.class);
 	}

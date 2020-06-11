@@ -6,23 +6,23 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
 
-public class UsuarioDao extends Dao<Usuario> {
+public class UsuarioDao extends Dao<User> {
 
 	public UsuarioDao() {
-		super(Usuario.class);
+		super(User.class);
 	}
 
-	public Usuario selectByEmail(String email) {
+	public User selectByEmail(String email) {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
-		Query q = em.createQuery("FROM " + Usuario.class.getSimpleName() + " WHERE email = ?1");
+		Query q = em.createQuery("FROM " + User.class.getSimpleName() + " WHERE email = ?1");
 		q.setParameter(1, email);
-		Usuario result;
+		User result;
 		try {
-			result = (Usuario) q.getSingleResult();
+			result = (User) q.getSingleResult();
 		} catch (NoResultException ex) {
 			return null;
 		}
@@ -31,7 +31,7 @@ public class UsuarioDao extends Dao<Usuario> {
 		return result;
 	}
 
-	public Usuario selectLancamentos(Usuario u) {
+	public User selectLancamentos(User u) {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
 		Query q = em.createQuery("FROM Lancamento WHERE usuario.id = ?1");

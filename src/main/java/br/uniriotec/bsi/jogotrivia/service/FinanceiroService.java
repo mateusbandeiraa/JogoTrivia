@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.financeiro.DirecaoLancamento;
 import br.uniriotec.bsi.jogotrivia.financeiro.Lancamento;
 import br.uniriotec.bsi.jogotrivia.financeiro.LancamentoMonetario;
@@ -52,7 +52,7 @@ public class FinanceiroService {
 	@Autenticado
 	public Response atualizarLancamentos() {
 		LancamentoDao ld = new LancamentoDao();
-		Usuario usuarioLogado = ServiceUtils.obterUsuarioPorSecurityContext(securityContext);
+		User usuarioLogado = ServiceUtils.obterUsuarioPorSecurityContext(securityContext);
 		new UsuarioDao().selectLancamentos(usuarioLogado);
 
 		for (Lancamento lancamento : usuarioLogado.getLancamentos()) {

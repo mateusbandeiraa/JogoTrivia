@@ -35,7 +35,7 @@ import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
  *
  */
 @Entity
-public class Usuario {
+public class User {
 
 	public static final String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
@@ -47,14 +47,14 @@ public class Usuario {
 	@Column(nullable = false)
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
 			ViewUsuario.Proprio.Parametros.Atualizar.class })
-	private String nome;
+	private String name;
 
 	@JsonView({ ViewUsuario.Proprio.Parametros.Cadastrar.class,
 			ViewUsuario.Proprio.Parametros.Autenticar.class })
-	private transient String senha;
+	private transient String password;
 
 	@Column(nullable = false)
-	private String hashSenha;
+	private String passwordHash;
 
 	@Column(unique = true, nullable = false)
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
@@ -64,17 +64,17 @@ public class Usuario {
 
 	@Column(nullable = false, columnDefinition = "datetime default current_timestamp")
 	@JsonView({ ViewUsuario.Proprio.class })
-	private Date dataCadastro;
+	private Date registerDate;
 
 	@Column(nullable = false, columnDefinition = "boolean default true")
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
-	private Boolean ativo = true;
+	private Boolean active = true;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false,
 			columnDefinition = "ENUM('USUARIO', 'MODERADOR', 'ANFITRIAO') DEFAULT 'USUARIO'")
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Moderador.Parametros.Atualizar.class })
-	private Privilegio privilegio;
+	private Privilegio authorization;
 
 	@OneToMany(orphanRemoval = true, targetEntity = Lancamento.class)
 	private List<Lancamento> lancamentos;
@@ -91,23 +91,23 @@ public class Usuario {
 	@JsonView({ ViewUsuario.Proprio.class })
 	private Integer quantidadeAjudasBonus = 0;
 
-	public Usuario(String nome, String hashSenha, String email, Date dataCadastro, boolean ativo) {
-		this(nome, email, dataCadastro, ativo);
-		setHashSenha(hashSenha);
+	public User(String name, String passwordHash, String email, Date registerDate, boolean active) {
+		this(name, email, registerDate, active);
+		setPasswordHash(passwordHash);
 	}
 
-	public Usuario(String nome, String email, Date dataCadastro, boolean ativo) {
+	public User(String name, String email, Date registerDate, boolean active) {
 		this();
-		setNome(nome);
+		setName(name);
 		setEmail(email);
-		setDataCadastro(dataCadastro);
-		setAtivo(ativo);
+		setRegisterDate(registerDate);
+		setActive(active);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Usuario) {
-			Usuario usuario = (Usuario) obj;
+		if (obj instanceof User) {
+			User usuario = (User) obj;
 			if (usuario.getId() != 0 && this.getId() != 0) {
 				return usuario.getId() == this.getId();
 			}
@@ -119,12 +119,12 @@ public class Usuario {
 	 * Instancia um objeto TokenAutenticacao caso a senha passada esteja correta.
 	 * Retorna null caso a senha esteja incorreta.
 	 * 
-	 * @param senha
+	 * @param password
 	 *            String contendo a senha em plain-text
 	 * @return
 	 */
-	public TokenAutenticacao autenticar(String senha) {
-		if (BCrypt.checkpw(senha, hashSenha)) {
+	public TokenAutenticacao authenticate(String password) {
+		if (BCrypt.checkpw(password, passwordHash)) {
 			return new TokenAutenticacao(this);
 		} else {
 			return null;
@@ -141,12 +141,12 @@ public class Usuario {
 	/**
 	 * Retorna a classe view apropriada para o privilégio passado.
 	 * 
-	 * @param privilegio
+	 * @param authorization
 	 * @return
 	 */
-	private Class<? extends ViewUsuario> obterViewApropriada(Privilegio privilegio) {
+	private Class<? extends ViewUsuario> getView(Privilegio authorization) {
 		Class<? extends ViewUsuario> viewClass;
-		switch (privilegio) {
+		switch (authorization) {
 		case USUARIO:
 			viewClass = ViewUsuario.Proprio.class;
 			break;
@@ -169,8 +169,8 @@ public class Usuario {
 	 *         String JSON contendo os campos apropriados
 	 * @throws JsonProcessingException
 	 */
-	public String serializar(Privilegio privilegio) throws JsonProcessingException {
-		Class<? extends ViewUsuario> viewClass = this.obterViewApropriada(privilegio);
+	public String serialize(Privilegio privilegio) throws JsonProcessingException {
+		Class<? extends ViewUsuario> viewClass = this.getView(privilegio);
 		return CustomJsonProvider.writerWithView(viewClass).writeValueAsString(this);
 	}
 
@@ -178,7 +178,7 @@ public class Usuario {
 	 * Serializa este Usuario, apenas incluindo os campos incluídos na view
 	 * apropriada para o privilégio do Usuário passado.
 	 * 
-	 * @param requerente
+	 * @param requirer
 	 *            Usuario do qual o privilégio será base para decidir qual view
 	 *            deve
 	 *            ser usada
@@ -186,58 +186,58 @@ public class Usuario {
 	 *         String JSON contendo os campos apropriados
 	 * @throws JsonProcessingException
 	 */
-	public String serializar(Usuario requerente) throws JsonProcessingException {
-		return this.serializar(requerente.getPrivilegio());
+	public String serialize(User requirer) throws JsonProcessingException {
+		return this.serialize(requirer.getAuthorization());
 	}
 
 	/**
 	 * Copia os atributos não nulos e default para este objeto.
 	 * 
-	 * @param fonte
+	 * @param origin
 	 *            Objeto usuário de onde os atributos serão copiados.
-	 * @throws SenhaInvalidaException
+	 * @throws InvalidPasswordException
 	 */
-	public void copiarAtributosNãoDefault(Usuario fonte) throws SenhaInvalidaException {
-		if (fonte.getId() != 0) {
-			this.setId(fonte.getId());
+	public void copyNonDefaultAttributes(User origin) throws InvalidPasswordException {
+		if (origin.getId() != 0) {
+			this.setId(origin.getId());
 		}
 
-		if (StringUtils.isNotBlank(fonte.getNome())) {
-			this.setNome(fonte.getNome());
+		if (StringUtils.isNotBlank(origin.getName())) {
+			this.setName(origin.getName());
 		}
 
-		if (StringUtils.isNotBlank(fonte.getSenha())) {
-			fonte.gerarHashSenha(fonte.getSenha());
+		if (StringUtils.isNotBlank(origin.getPassword())) {
+			origin.generatePasswordHash(origin.getPassword());
 		}
 
-		if (StringUtils.isNotBlank(fonte.getEmail())) {
-			this.setEmail(fonte.getEmail());
+		if (StringUtils.isNotBlank(origin.getEmail())) {
+			this.setEmail(origin.getEmail());
 		}
 
-		if (fonte.getAtivo() != null) {
-			this.setAtivo(fonte.getAtivo());
+		if (origin.getActive() != null) {
+			this.setActive(origin.getActive());
 		}
 
-		if (fonte.getPrivilegio() != null) {
-			this.setPrivilegio(fonte.getPrivilegio());
+		if (origin.getAuthorization() != null) {
+			this.setAuthorization(origin.getAuthorization());
 		}
 
-		if (fonte.getQuantidadeAjudasBomba() != 0) {
-			this.setQuantidadeAjudasBomba(fonte.getQuantidadeAjudasBomba());
+		if (origin.getQuantidadeAjudasBomba() != 0) {
+			this.setQuantidadeAjudasBomba(origin.getQuantidadeAjudasBomba());
 		}
 
-		if (fonte.getQuantidadeAjudasBonus() != 0) {
-			this.setQuantidadeAjudasBonus(fonte.getQuantidadeAjudasBonus());
+		if (origin.getQuantidadeAjudasBonus() != 0) {
+			this.setQuantidadeAjudasBonus(origin.getQuantidadeAjudasBonus());
 		}
 
-		if (fonte.getQuantidadeAjudasPopular() != 0) {
-			this.setQuantidadeAjudasPopular(fonte.getQuantidadeAjudasPopular());
+		if (origin.getQuantidadeAjudasPopular() != 0) {
+			this.setQuantidadeAjudasPopular(origin.getQuantidadeAjudasPopular());
 		}
 	}
 
 	// @XmlElement
 	@JsonView(ViewAutenticado.class)
-	public BigDecimal getSaldo() {
+	public BigDecimal getCredits() {
 		BigDecimal saldo = BigDecimal.ZERO;
 
 		for (Lancamento lancamento : this.getLancamentos()) {
@@ -247,7 +247,7 @@ public class Usuario {
 		return saldo.setScale(2);
 	}
 
-	public Usuario() {
+	public User() {
 		super();
 	}
 
@@ -259,41 +259,41 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public String getName() {
+		return name;
 	}
 
-	public void setNome(String nome) throws IllegalArgumentException {
+	public void setName(String nome) throws IllegalArgumentException {
 		if (nome == null || nome.isEmpty()) {
 			throw new IllegalArgumentException("Nome inválido");
 		}
-		this.nome = nome;
+		this.name = nome;
 	}
 
-	public String getSenha() {
-		return senha;
+	public String getPassword() {
+		return password;
 	}
 
-	public String getHashSenha() {
-		return hashSenha;
+	public String getPasswordHash() {
+		return passwordHash;
 	}
 
-	public void setHashSenha(String hashSenha) {
-		this.hashSenha = hashSenha;
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 
-	public void gerarHashSenha(String senha) throws SenhaInvalidaException {
-		if (senha == null || senha.isEmpty()) {
-			throw new SenhaInvalidaException();
+	public void generatePasswordHash(String password) throws InvalidPasswordException {
+		if (password == null || password.isEmpty()) {
+			throw new InvalidPasswordException();
 		}
-		this.senha = senha;
-		this.setHashSenha(BCrypt.hashpw(senha, BCrypt.gensalt()));
+		this.password = password;
+		this.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt()));
 	}
 
-	public class SenhaInvalidaException extends Exception {
+	public class InvalidPasswordException extends Exception {
 		private static final long serialVersionUID = -128714569199582797L;
 
-		public SenhaInvalidaException() {
+		public InvalidPasswordException() {
 			super("Senha inválida");
 		}
 	}
@@ -309,28 +309,28 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public Date getDataCadastro() {
-		return dataCadastro;
+	public Date getRegisterDate() {
+		return registerDate;
 	}
 
-	public void setDataCadastro(Date dataCadastro) {
-		this.dataCadastro = dataCadastro;
+	public void setRegisterDate(Date registerDate) {
+		this.registerDate = registerDate;
 	}
 
-	public Boolean getAtivo() {
-		return ativo;
+	public Boolean getActive() {
+		return active;
 	}
 
-	public void setAtivo(Boolean ativo) {
-		this.ativo = ativo;
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 
-	public Privilegio getPrivilegio() {
-		return privilegio;
+	public Privilegio getAuthorization() {
+		return authorization;
 	}
 
-	public void setPrivilegio(Privilegio privilegio) {
-		this.privilegio = privilegio;
+	public void setAuthorization(Privilegio authorization) {
+		this.authorization = authorization;
 	}
 
 	public List<Lancamento> getLancamentos() {

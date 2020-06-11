@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.gameplay.Opcao;
 import br.uniriotec.bsi.jogotrivia.gameplay.Questao;
 import br.uniriotec.bsi.jogotrivia.persistence.QuestaoDao;
@@ -35,9 +35,9 @@ public class QuestaoService {
 	@Context
 	SecurityContext securityContext;
 
-	private Usuario usuarioAutenticado;
+	private User usuarioAutenticado;
 
-	private Usuario getUsuarioAutenticado() {
+	private User getUsuarioAutenticado() {
 		if (usuarioAutenticado == null) {
 			usuarioAutenticado = obterUsuarioPorSecurityContext(securityContext);
 		}
@@ -48,7 +48,7 @@ public class QuestaoService {
 	@POST
 	@Autenticado({ Privilegio.MODERADOR, Privilegio.ANFITRIAO })
 	public Response cadastrar(Questao questaoJson) {
-		Usuario autor = getUsuarioAutenticado();
+		User autor = getUsuarioAutenticado();
 		QuestaoDao qd = new QuestaoDao();
 
 		Questao questaoSanetizada = new Questao(questaoJson.getTextoPergunta(), questaoJson.getTempoDisponivel(),
@@ -96,7 +96,7 @@ public class QuestaoService {
 			return cadastrar(questaoJson);
 		}
 
-		if (getUsuarioAutenticado().getPrivilegio().equals(Privilegio.ANFITRIAO)
+		if (getUsuarioAutenticado().getAuthorization().equals(Privilegio.ANFITRIAO)
 				&& !questaoSanetizada.getAutor().equals(getUsuarioAutenticado())) {
 			return buildResponse(Status.UNAUTHORIZED);
 		}
@@ -150,7 +150,7 @@ public class QuestaoService {
 			return buildResponse(Status.OK, questao);
 		} else {
 			List<Questao> questoes;
-			if (getUsuarioAutenticado().getPrivilegio().equals(Privilegio.ANFITRIAO)) {
+			if (getUsuarioAutenticado().getAuthorization().equals(Privilegio.ANFITRIAO)) {
 				questoes = qd.selectByAutor(usuarioAutenticado.getId());
 			} else {
 				questoes = qd.selectAll();

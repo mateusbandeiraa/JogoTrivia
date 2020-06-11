@@ -20,17 +20,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monitorjbl.json.JsonView;
 import com.monitorjbl.json.JsonViewModule;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
 public abstract class ServiceUtils {
 
-	public static Usuario obterUsuarioPorSecurityContext(SecurityContext context) {
+	public static User obterUsuarioPorSecurityContext(SecurityContext context) {
 		if (context == null || context.getUserPrincipal() == null) {
 			return null;
 		}
 		int idUsuarioAutenticado = Integer.valueOf(context.getUserPrincipal().getName());
-		Usuario usuarioAutenticado = new UsuarioDao().select(idUsuarioAutenticado);
+		User usuarioAutenticado = new UsuarioDao().select(idUsuarioAutenticado);
 		return usuarioAutenticado;
 	}
 

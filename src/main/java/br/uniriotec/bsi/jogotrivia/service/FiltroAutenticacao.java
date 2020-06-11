@@ -14,7 +14,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.TokenAutenticacaoDao;
 import br.uniriotec.bsi.jogotrivia.persistence.UsuarioDao;
 
@@ -45,7 +45,7 @@ public class FiltroAutenticacao implements ContainerRequestFilter {
 
 			// Validate the token
 			TokenAutenticacao tokenAutenticacao = validateToken(token);
-			Usuario usuario = new UsuarioDao().select(tokenAutenticacao.getUsuario().getId());
+			User usuario = new UsuarioDao().select(tokenAutenticacao.getUsuario().getId());
 
 			final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
 			requestContext.setSecurityContext(new SecurityContext() {
@@ -57,7 +57,7 @@ public class FiltroAutenticacao implements ContainerRequestFilter {
 
 				@Override
 				public boolean isUserInRole(String role) {
-					return usuario.getPrivilegio().toString().equals(role);
+					return usuario.getAuthorization().toString().equals(role);
 				}
 
 				@Override

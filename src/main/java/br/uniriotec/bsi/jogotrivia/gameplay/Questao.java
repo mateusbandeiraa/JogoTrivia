@@ -14,7 +14,7 @@ import javax.persistence.OrderColumn;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaAberta;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewRodadaEncerrada;
@@ -34,7 +34,7 @@ public class Questao {
 
 	@ManyToOne(optional = false)
 	@JsonView(ViewAnfitriao.class)
-	private Usuario autor;
+	private User autor;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderColumn
@@ -45,14 +45,14 @@ public class Questao {
 
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel, Usuario autor) {
+	public Questao(String textoPergunta, int tempoDisponivel, User autor) {
 		this();
 		this.textoPergunta = textoPergunta;
 		this.tempoDisponivel = tempoDisponivel;
 		this.autor = autor;
 	}
 
-	public Questao(String textoPergunta, int tempoDisponivel, List<Opcao> opcoes, Usuario autor) {
+	public Questao(String textoPergunta, int tempoDisponivel, List<Opcao> opcoes, User autor) {
 		this(textoPergunta, tempoDisponivel, autor);
 		this.opcoes = opcoes;
 	}
@@ -107,11 +107,11 @@ public class Questao {
 		this.setOpcaoCorreta(correta);
 	}
 
-	public Usuario getAutor() {
+	public User getAutor() {
 		return autor;
 	}
 
-	public void setAutor(Usuario autor) {
+	public void setAutor(User autor) {
 		this.autor = autor;
 	}
 

@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.service.Views;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewPublico;
@@ -73,7 +73,7 @@ public class Partida {
 
 	@ManyToOne(optional = false)
 	@JsonView(ViewPublico.class)
-	private Usuario anfitriao;
+	private User anfitriao;
 
 	@OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
 	@JsonView(ViewPublico.class)
@@ -84,14 +84,14 @@ public class Partida {
 		super();
 	}
 
-	public Partida(String nome, Date dataInicio, Usuario anfitriao) {
+	public Partida(String nome, Date dataInicio, User anfitriao) {
 		this();
 		this.nome = nome;
 		this.dataInicio = dataInicio;
 		this.setAnfitriao(anfitriao);
 	}
 
-	public Partida(String nome, Date dataInicio, Usuario anfitriao, BigDecimal premio, BigDecimal entrada) {
+	public Partida(String nome, Date dataInicio, User anfitriao, BigDecimal premio, BigDecimal entrada) {
 		this(nome, dataInicio, anfitriao);
 		this.premio = premio;
 		this.entrada = entrada;
@@ -155,7 +155,7 @@ public class Partida {
 		this.getParticipantes().add(participante);
 	}
 
-	public boolean usuarioEstaInscrito(Usuario usuario) {
+	public boolean usuarioEstaInscrito(User usuario) {
 		for (Participante participante : getParticipantes()) {
 			if (participante.getUsuario().equals(usuario)) {
 				return true;
@@ -245,12 +245,12 @@ public class Partida {
 		this.entrada = entrada;
 	}
 
-	public Usuario getAnfitriao() {
+	public User getAnfitriao() {
 		return anfitriao;
 	}
 
-	public void setAnfitriao(Usuario anfitriao) {
-		if (!(anfitriao.getPrivilegio() == Privilegio.ANFITRIAO || anfitriao.getPrivilegio() == Privilegio.MODERADOR)) {
+	public void setAnfitriao(User anfitriao) {
+		if (!(anfitriao.getAuthorization() == Privilegio.ANFITRIAO || anfitriao.getAuthorization() == Privilegio.MODERADOR)) {
 			throw new IllegalArgumentException("O anfitrião não tem os privilégios necessários.");
 		}
 		this.anfitriao = anfitriao;

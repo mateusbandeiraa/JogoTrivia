@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.persistence.PalpiteDao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAnfitriao;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
@@ -47,7 +47,7 @@ public class Participante {
 
 	@ManyToOne(optional = false)
 	@JsonView(ViewAutenticado.class)
-	private Usuario usuario;
+	private User usuario;
 
 	@ManyToOne(optional = false)
 	@JsonBackReference
@@ -61,7 +61,7 @@ public class Participante {
 		super();
 	}
 
-	public Participante(String handle, Date dataCriacao, String ip, String localizacao, Usuario usuario,
+	public Participante(String handle, Date dataCriacao, String ip, String localizacao, User usuario,
 			Partida partida) {
 		this();
 		this.handle = handle;
@@ -78,7 +78,7 @@ public class Participante {
 		if (this.getHandle() != null) {
 			return this.getHandle();
 		}
-		return this.getUsuario().getNome();
+		return this.getUsuario().getName();
 	}
 
 	public int getId() {
@@ -121,11 +121,11 @@ public class Participante {
 		this.localizacao = localizacao;
 	}
 
-	public Usuario getUsuario() {
+	public User getUsuario() {
 		return usuario;
 	}
 
-	public void setUsuario(Usuario usuario) {
+	public void setUsuario(User usuario) {
 		this.usuario = usuario;
 	}
 

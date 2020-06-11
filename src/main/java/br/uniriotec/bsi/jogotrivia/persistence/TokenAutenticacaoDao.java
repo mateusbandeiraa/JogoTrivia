@@ -5,7 +5,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.TokenAutenticacao;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 
 public class TokenAutenticacaoDao extends Dao<TokenAutenticacao>{
 
@@ -29,7 +29,7 @@ public class TokenAutenticacaoDao extends Dao<TokenAutenticacao>{
 		return result;
 	}
 	
-	public TokenAutenticacao selectByUser(Usuario usuario) {
+	public TokenAutenticacao selectByUser(User usuario) {
 		return selectByUser(usuario.getId());
 	}
 	

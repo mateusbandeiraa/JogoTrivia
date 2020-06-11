@@ -15,7 +15,7 @@ import javax.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
 
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 import br.uniriotec.bsi.jogotrivia.service.Views.ViewAutenticado;
 
 @Entity
@@ -38,13 +38,13 @@ public abstract class Lancamento {
 
 	@ManyToOne(optional = false)
 	@JsonBackReference
-	private Usuario usuario;
+	private User usuario;
 
 	public Lancamento() {
 		super();
 	}
 
-	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario, Date data) {
+	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, User usuario, Date data) {
 		this();
 		this.valor = valor;
 		this.direcao = direcao;
@@ -52,7 +52,7 @@ public abstract class Lancamento {
 		this.data = data;
 	}
 
-	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, Usuario usuario) {
+	public Lancamento(BigDecimal valor, DirecaoLancamento direcao, User usuario) {
 		this(valor, direcao, usuario, new Date());
 	}
 
@@ -92,11 +92,11 @@ public abstract class Lancamento {
 		this.data = data;
 	}
 
-	public Usuario getUsuario() {
+	public User getUsuario() {
 		return usuario;
 	}
 
-	public void setUsuario(Usuario usuario) {
+	public void setUsuario(User usuario) {
 		this.usuario = usuario;
 	}
 

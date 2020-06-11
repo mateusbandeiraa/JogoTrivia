@@ -17,7 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 
 import br.uniriotec.bsi.jogotrivia.administrativo.Privilegio;
-import br.uniriotec.bsi.jogotrivia.administrativo.Usuario;
+import br.uniriotec.bsi.jogotrivia.administrativo.User;
 
 @Entity
 public class Ticket {
@@ -33,15 +33,15 @@ public class Ticket {
 	@OrderColumn
 	private List<Mensagem> mensagens;
 	@ManyToOne(optional = false)
-	private Usuario solicitante;
+	private User solicitante;
 	@ManyToOne(optional = true)
-	private Usuario solucionador;
+	private User solucionador;
 
 	public Ticket() {
 
 	}
 
-	public Ticket(String assunto, Usuario solicitante) {
+	public Ticket(String assunto, User solicitante) {
 		super();
 		this.assunto = assunto;
 		this.solicitante = solicitante;
@@ -87,20 +87,20 @@ public class Ticket {
 		this.mensagens = mensagens;
 	}
 
-	public Usuario getSolicitante() {
+	public User getSolicitante() {
 		return solicitante;
 	}
 
-	public void setSolicitante(Usuario solicitante) {
+	public void setSolicitante(User solicitante) {
 		this.solicitante = solicitante;
 	}
 
-	public Usuario getSolucionador() {
+	public User getSolucionador() {
 		return solucionador;
 	}
 
-	public void setSolucionador(Usuario solucionador) {
-		if (!solucionador.getPrivilegio().equals(Privilegio.MODERADOR)) {
+	public void setSolucionador(User solucionador) {
+		if (!solucionador.getAuthorization().equals(Privilegio.MODERADOR)) {
 			throw new IllegalArgumentException("O solucionador de um Ticket deve ter privilégios de MODERADOR");
 		}
 		this.solucionador = solucionador;
