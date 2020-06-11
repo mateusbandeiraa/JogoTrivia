@@ -11,6 +11,12 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link href="../css/common-style.css" rel="stylesheet">
+    <script src="../js/common-script.js"></script>
+    <style>
+        #alert-div:not(.alert) {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,17 +32,61 @@
                             <h1 class="card-title">
                                 Sign in
                             </h1>
-                            <form>
+                            <form id="login-form" action="/rest/user/auth" method="POST">
+                                <div id="alert-div" role="alert"></div>
                                 <div class="form-group">
                                     <label for="username">Username or E-mail</label>
-                                    <input type="text" class="form-control" id="usernameInput">
+                                    <input type="text" class="form-control" id="usernameInput" name="usernameOrEmail">
                                 </div>
                                 <div class="form-group">
                                     <label for="passwordInput">Password</label>
-                                    <input type="password" class="form-control" id="passwordInput">
+                                    <input type="password" class="form-control" id="passwordInput" name="password">
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-block">Sign in</button>
                             </form>
+                            <script>
+                                const LOGIN_FORM = document.getElementById('login-form');
+                                const ALERT_DIV = document.getElementById('alert-div');
+                                LOGIN_FORM.addEventListener('submit', function (event) {
+                                    event.preventDefault();
+                                    clearAlertDiv();
+
+                                    let requestData = new FormData(LOGIN_FORM);
+
+                                    let isEmail = EMAIL_REGEX.test(requestData.get('usernameOrEmail'));
+                                    requestData.append(isEmail ? 'email' : 'username', requestData.get('usernameOrEmail'));
+                                    requestData.delete('usernameOrEmail');
+
+                                    fetch(LOGIN_FORM.getAttribute('action'), {
+                                        method: LOGIN_FORM.getAttribute('method'),
+                                        body: FormDataToJSON(requestData),
+                                        headers: {
+                                            "Content-Type": 'application/json'
+                                        }
+                                    }).then(async function (response) {
+                                        if (response.ok) {
+                                            return response.json();
+                                        } else if (response.status == '404') {
+                                            setWarning('User not found');
+                                        } else if (response.status == '401') {
+                                            setWarning('Wrong password');
+                                        } else {
+                                            throw response;
+                                        }
+                                    }).catch((err) => {
+                                        console.error(err);
+                                    });
+                                });
+
+                                function clearAlertDiv() {
+                                    ALERT_DIV.innerHTML = "";
+                                    ALERT_DIV.classList = [];
+                                }
+                                function setWarning(message) {
+                                    ALERT_DIV.textContent = message;
+                                    ALERT_DIV.classList.add('alert', 'alert-danger');
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>
