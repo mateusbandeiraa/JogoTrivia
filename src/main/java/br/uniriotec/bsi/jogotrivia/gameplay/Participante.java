@@ -78,7 +78,7 @@ public class Participante {
 		if (this.getHandle() != null) {
 			return this.getHandle();
 		}
-		return this.getUsuario().getName();
+		return this.getUsuario().getUsername();
 	}
 
 	public int getId() {

@@ -47,7 +47,7 @@ public class User {
 	@Column(nullable = false)
 	@JsonView({ ViewUsuario.Proprio.class, ViewUsuario.Proprio.Parametros.Cadastrar.class,
 			ViewUsuario.Proprio.Parametros.Atualizar.class })
-	private String name;
+	private String username;
 
 	@JsonView({ ViewUsuario.Proprio.Parametros.Cadastrar.class,
 			ViewUsuario.Proprio.Parametros.Autenticar.class })
@@ -98,7 +98,7 @@ public class User {
 
 	public User(String name, String email, Date registerDate, boolean active) {
 		this();
-		setName(name);
+		setUsername(name);
 		setEmail(email);
 		setRegisterDate(registerDate);
 		setActive(active);
@@ -202,8 +202,8 @@ public class User {
 			this.setId(origin.getId());
 		}
 
-		if (StringUtils.isNotBlank(origin.getName())) {
-			this.setName(origin.getName());
+		if (StringUtils.isNotBlank(origin.getUsername())) {
+			this.setUsername(origin.getUsername());
 		}
 
 		if (StringUtils.isNotBlank(origin.getPassword())) {
@@ -259,15 +259,15 @@ public class User {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setName(String nome) throws IllegalArgumentException {
-		if (nome == null || nome.isEmpty()) {
+	public void setUsername(String username) throws IllegalArgumentException {
+		if (username == null || username.isEmpty()) {
 			throw new IllegalArgumentException("Nome inválido");
 		}
-		this.name = nome;
+		this.username = username;
 	}
 
 	public String getPassword() {
