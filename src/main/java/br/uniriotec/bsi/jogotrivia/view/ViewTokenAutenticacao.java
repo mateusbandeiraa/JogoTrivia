@@ -1,10 +1,11 @@
 package br.uniriotec.bsi.jogotrivia.view;
 
-public class ViewTokenAutenticacao {
-	
+public interface ViewTokenAutenticacao {
+
 	/**
 	 * Atributos que o proprio usuario pode visualizar
 	 */
-	public static class Proprio extends ViewUsuario.Proprio {
+	public static interface Proprio {
+
 	}
 }

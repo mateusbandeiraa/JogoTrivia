@@ -11,6 +11,12 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link href="../css/common-style.css" rel="stylesheet">
+    <script src="../js/common-script.js"></script>
+    <style>
+        #alert-div:not(.alert) {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,21 +32,56 @@
                             <h1 class="card-title">
                                 Sign up
                             </h1>
-                            <form>
+                            <form id="signup-form" action="/rest/user" method="POST">
+                                <div id="alert-div" role="alert"></div>
                                 <div class="form-group">
                                     <label for="usernameInput">Username</label>
-                                    <input type="text" class="form-control" id="usernameInput">
+                                    <input type="text" class="form-control" id="usernameInput" name="username" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="emailInput">E-mail</label>
-                                    <input type="email" class="form-control" id="emailInput">
+                                    <input type="email" class="form-control" id="emailInput" name="email" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="passwordInput">Password</label>
-                                    <input type="password" class="form-control" id="passwordInput">
+                                    <input type="password" class="form-control" id="passwordInput" name="password"
+                                        required>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-block">Sign up</button>
                             </form>
+                            <script>
+                                const SIGNUP_FORM = document.getElementById('signup-form');
+                                SIGNUP_FORM.addEventListener('submit', function (event) {
+                                    event.preventDefault();
+
+                                    fetch(SIGNUP_FORM.getAttribute('action'), {
+                                        method: SIGNUP_FORM.getAttribute('method'),
+                                        body: formDataToJSON(new FormData(SIGNUP_FORM)),
+                                        headers: {
+                                            "Content-Type": 'application/json'
+                                        }
+                                    }).then(async function (response) {
+                                        if (response.ok) {
+                                            setWarning(await response.json());
+                                        } else if (response.status == '400') {
+                                            setWarning(await response.text());
+                                        } else {
+                                            throw response;
+                                        }
+                                    });
+                                })
+
+                                const ALERT_DIV = document.getElementById('alert-div');
+
+                                function clearAlertDiv() {
+                                    ALERT_DIV.innerHTML = "";
+                                    ALERT_DIV.classList = [];
+                                }
+                                function setWarning(message) {
+                                    ALERT_DIV.textContent = message;
+                                    ALERT_DIV.classList.add('alert', 'alert-danger');
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>

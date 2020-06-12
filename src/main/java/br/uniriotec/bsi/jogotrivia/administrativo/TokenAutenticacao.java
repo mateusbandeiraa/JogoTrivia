@@ -23,7 +23,6 @@ public class TokenAutenticacao {
 	private int id;
 	@OneToOne
 	@JoinColumn
-	@JsonView(ViewTokenAutenticacao.Proprio.class)
 	private User usuario;
 	
 	@Column(nullable = false)

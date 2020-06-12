@@ -5,7 +5,9 @@ import static br.uniriotec.bsi.jogotrivia.service.ServiceUtils.obterUsuarioPorSe
 
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -46,37 +48,52 @@ import br.uniriotec.bsi.jogotrivia.view.ViewUsuario;
 public class UsuarioService {
 
 	public static final ParExclusoes EXCLUSOES_USUARIO = new ParExclusoes(User.class, "hashSenha");
-	public static final ParExclusoes EXCLUSOES_TOKEN_AUTENTICACAO = new ParExclusoes(TokenAutenticacao.class, "id");
+	public static final ParExclusoes EXCLUSOES_TOKEN_AUTENTICACAO = new ParExclusoes(
+			TokenAutenticacao.class, "id");
 
 	@Context
 	SecurityContext securityContext;
 
+	private interface SignUpView extends ViewUsuario.Proprio, ViewTokenAutenticacao.Proprio {
+	};
+
 	@POST
-	@JsonView(ViewUsuario.Proprio.class)
-	public User cadastrar(@JsonView(ViewUsuario.Proprio.Parametros.Cadastrar.class) User usuario) {
+	@JsonView(SignUpView.class)
+	public Map<String, Object> signUp(
+			@JsonView(ViewUsuario.Proprio.Parametros.Cadastrar.class) User user)
+			throws JsonProcessingException {
 		UsuarioDao ud = new UsuarioDao();
 
 		try {
-			usuario.setRegisterDate(new Date());
-			usuario.setActive(true);
-			usuario.setAuthorization(Privilegio.USUARIO);
+			user.setRegisterDate(new Date());
+			user.setActive(true);
+			user.setAuthorization(Privilegio.USUARIO);
 
-			usuario.generatePasswordHash(usuario.getPassword());
+			user.generatePasswordHash(user.getPassword());
 		} catch (IllegalArgumentException | InvalidPasswordException ex) {
-			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).build());
+			throw new BadRequestException(
+					Response.status(Status.BAD_REQUEST).entity(ex.getMessage()).build());
 		}
 
-		if (ud.selectByEmail(usuario.getEmail()) != null) {
-			throw new BadRequestException(Response.status(Status.BAD_REQUEST).entity("Usuário já cadastrado").build());
+		if (ud.selectByEmail(user.getEmail()) != null) {
+			throw new BadRequestException(
+					Response.status(Status.BAD_REQUEST).entity("E-mail already in use").build());
 		}
+		// TODO CHECK IF USERNAME IS TAKEN
 
-		ud.insert(usuario);
-		return usuario;
+		ud.insert(user);
+		TokenAutenticacao token = autenticar(user);
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("user", user);
+		response.put("token", token);
+		return response;
 	}
 
 	@PUT
 	@Autenticado
-	public Response atualizar(@JsonView(ViewUsuario.Moderador.Parametros.Atualizar.class) User usuarioDadosNovos) {
+	public Response atualizar(
+			@JsonView(ViewUsuario.Moderador.Parametros.Atualizar.class) User usuarioDadosNovos) {
 		UsuarioDao ud = new UsuarioDao();
 
 		User usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
@@ -84,25 +101,19 @@ public class UsuarioService {
 
 		if (usuarioRequerente.getAuthorization().equals(Privilegio.USUARIO)) {
 			if (usuarioRequerente.getId() != usuarioDadosNovos.getId()) {
-				throw new NotAuthorizedException(
-						Response.status(Status.UNAUTHORIZED)
-								.entity("Sem autorização para alterar dados de outro usuário.")
-								.build());
+				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+						.entity("Sem autorização para alterar dados de outro usuário.").build());
 			}
 			if (usuarioDadosNovos.getAuthorization() != null
 					&& !usuarioBD.getAuthorization().equals(usuarioDadosNovos.getAuthorization())) {
-				throw new NotAuthorizedException(
-						Response.status(Status.UNAUTHORIZED)
-								.entity("Sem autorização para alterar privilégios.")
-								.build());
+				throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+						.entity("Sem autorização para alterar privilégios.").build());
 			}
 		}
 
 		if (usuarioBD == null) {
 			throw new BadRequestException(
-					Response.status(Status.BAD_REQUEST)
-					.entity("Usuário não encontrado.")
-					.build());
+					Response.status(Status.BAD_REQUEST).entity("Usuário não encontrado.").build());
 		}
 
 		try {
@@ -127,24 +138,21 @@ public class UsuarioService {
 	@POST
 	@Path("/auth")
 	@JsonView(ViewTokenAutenticacao.Proprio.class)
-	public TokenAutenticacao autenticar(@JsonView(ViewUsuario.Proprio.Parametros.Autenticar.class) User usuarioRequerente) {
+	public TokenAutenticacao autenticar(
+			@JsonView(ViewUsuario.Proprio.Parametros.Autenticar.class) User usuarioRequerente) {
 		UsuarioDao ud = new UsuarioDao();
 		User usuario = ud.selectByEmail(usuarioRequerente.getEmail());
 
 		if (usuario == null) {
 			throw new NotFoundException(
-					Response.status(Status.NOT_FOUND)
-					.entity("E-mail não encontrado.")
-					.build());
+					Response.status(Status.NOT_FOUND).entity("E-mail não encontrado.").build());
 		}
 
 		TokenAutenticacao tokenNovo = usuario.authenticate(usuarioRequerente.getPassword());
 
 		if (tokenNovo == null) {
 			throw new NotAuthorizedException(
-					Response.status(Status.UNAUTHORIZED)
-					.entity("Senha incorreta.")
-					.build());
+					Response.status(Status.UNAUTHORIZED).entity("Senha incorreta.").build());
 		}
 
 		TokenAutenticacaoDao tad = new TokenAutenticacaoDao();
@@ -164,30 +172,24 @@ public class UsuarioService {
 	@Path("/{id}")
 	public Response obter(@PathParam("id") Integer idUsuario) {
 		User usuarioRequerente = obterUsuarioPorSecurityContext(securityContext);
-		
-		if(usuarioRequerente.getAuthorization().equals(Privilegio.USUARIO) && !idUsuario.equals(usuarioRequerente.getId())) {
-			
-			
-			
-			throw new NotAuthorizedException(
-					Response.status(Status.UNAUTHORIZED)
-					.entity("Sem autorização para exibir dados deste usuário.")
-					.build());
 
-		
+		if (usuarioRequerente.getAuthorization().equals(Privilegio.USUARIO)
+				&& !idUsuario.equals(usuarioRequerente.getId())) {
+
+			throw new NotAuthorizedException(Response.status(Status.UNAUTHORIZED)
+					.entity("Sem autorização para exibir dados deste usuário.").build());
+
 		}
 
 		UsuarioDao ud = new UsuarioDao();
-		
+
 		User usuarioBD = ud.select(idUsuario);
-		
-		if(usuarioBD == null) {
+
+		if (usuarioBD == null) {
 			throw new NotFoundException(
-					Response.status(Status.NOT_FOUND)
-					.entity("Usuário não encontrado.")
-					.build());
+					Response.status(Status.NOT_FOUND).entity("Usuário não encontrado.").build());
 		}
-		
+
 		String jsonUsuario;
 		try {
 			jsonUsuario = usuarioBD.serialize(usuarioRequerente);
@@ -195,12 +197,12 @@ public class UsuarioService {
 			ex.printStackTrace();
 			throw new InternalServerErrorException();
 		}
-		
+
 		return Response.ok(jsonUsuario).build();
 	}
-	
+
 	@GET
-	@Autenticado({Privilegio.MODERADOR})
+	@Autenticado({ Privilegio.MODERADOR })
 	@JsonView(ViewUsuario.Moderador.class)
 	public List<User> obterTodos() {
 		UsuarioDao ud = new UsuarioDao();

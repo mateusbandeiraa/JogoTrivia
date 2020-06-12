@@ -1,27 +1,27 @@
 package br.uniriotec.bsi.jogotrivia.view;
 
-public class ViewUsuario {
+public interface ViewUsuario {
 	/**
 	 * Campos que o proprio usuario pode acessar
 	 */
-	public static class Proprio extends ViewUsuario {
-		public static class Parametros {
+	public static interface Proprio extends ViewUsuario {
+		public static interface Parametros {
 			/**
 			 * Campos de entrada no endpoint de cadastro
 			 */
-			public static class Cadastrar {
+			public static interface Cadastrar {
 			}
 
 			/**
 			 * Campos de entrada no endpoint de atualizacao
 			 */
-			public static class Atualizar {
+			public static interface Atualizar {
 			}
 
 			/**
 			 * Campos de entrada no endpoint de autenticação
 			 */
-			public static class Autenticar {
+			public static interface Autenticar {
 			}
 		}
 	}
@@ -29,18 +29,18 @@ public class ViewUsuario {
 	/**
 	 * Campos que moderadores podem acessar
 	 */
-	public static class Moderador extends Proprio {
-		public static class Parametros {
+	public static interface Moderador extends Proprio {
+		public static interface Parametros {
 			/**
 			 * Campos de entrada no endpoint de cadastro
 			 */
-			public static class Cadastrar extends Proprio.Parametros.Cadastrar {
+			public static interface Cadastrar extends Proprio.Parametros.Cadastrar {
 			}
 
 			/**
 			 * Campos de entrada no endpoint de atualizacao
 			 */
-			public static class Atualizar extends Proprio.Parametros.Atualizar {
+			public static interface Atualizar extends Proprio.Parametros.Atualizar {
 			}
 		}
 	}
